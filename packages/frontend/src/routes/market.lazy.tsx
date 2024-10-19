@@ -1,3 +1,4 @@
+import MarketPlace from '@/MarketPlace';
 import { createLazyFileRoute } from '@tanstack/react-router'
 
 export const Route = createLazyFileRoute('/market')({
@@ -5,5 +6,7 @@ export const Route = createLazyFileRoute('/market')({
 })
 
 function About() {
-  return <div className="p-2">Hello from About!</div>
+  return (<>
+  <MarketPlace/>
+  </>);
 }
