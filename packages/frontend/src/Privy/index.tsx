@@ -9,6 +9,7 @@ export default function Component() {
   const { wallets } = useWallets()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isCorrectNetwork, setIsCorrectNetwork] = useState(false)
 
   const targetChainId = 11155111 // Sepolia testnet
 
@@ -27,9 +28,13 @@ export default function Component() {
     if (currentChainId !== targetChainId) {
       try {
         await wallet.switchChain(targetChainId)
+        setIsCorrectNetwork(true)
       } catch (error) {
         setError("Failed to switch network. Please switch to Sepolia manually.")
+        setIsCorrectNetwork(false)
       }
+    } else {
+      setIsCorrectNetwork(true)
     }
   }
 
@@ -54,10 +59,12 @@ export default function Component() {
 
   return (
     <div className="space-y-4">
-      <Button onClick={handleConnect} disabled={isLoading}>
-        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {authenticated ? 'Switch Network' : 'Connect Wallet'}
-      </Button>
+      {(!authenticated || !isCorrectNetwork) && (
+        <Button onClick={handleConnect} disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {authenticated ? 'Switch Network' : 'Connect Wallet'}
+        </Button>
+      )}
       {error && (
         <Alert variant="destructive">
           <AlertTitle>Error</AlertTitle>
@@ -67,7 +74,10 @@ export default function Component() {
       {authenticated && user && (
         <Alert>
           <AlertTitle>Connected</AlertTitle>
-          <AlertDescription>Welcome, {user.id}</AlertDescription>
+          <AlertDescription>
+            Welcome, {user.id}
+            {isCorrectNetwork && <span className="ml-2">(On Sepolia network)</span>}
+          </AlertDescription>
         </Alert>
       )}
     </div>
