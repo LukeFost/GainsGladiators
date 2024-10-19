@@ -83,27 +83,13 @@ export default function MarketPlace() {
             </div>
             <div className="flex justify-between items-center">
                 <Button
-                variant={
-                    item.type === 'Agent'
-                    ? 'default'
-                    : item.type === 'Data'
-                    ? 'secondary'
-                    : 'destructive'
-                }
-                style={{
-                    backgroundColor:
-                    item.type === 'Agent'
-                        ? 'hsl(var(--primary))'
-                        : item.type === 'Data'
-                        ? 'hsl(var(--secondary))'
-                        : 'hsl(var(--destructive))',
-                    color:
-                    item.type === 'Agent'
-                        ? 'hsl(var(--primary-foreground))'
-                        : item.type === 'Data'
-                        ? 'hsl(var(--secondary-foreground))'
-                        : 'hsl(var(--destructive-foreground))',
-                }}
+                variant="outline"
+                className={`
+                    ${item.type === 'Agent' ? 'bg-accent text-accent-foreground' : 
+                      item.type === 'Data' ? 'bg-secondary text-secondary-foreground' : 
+                      'bg-destructive text-destructive-foreground'}
+                    border-2 border-border hover:bg-muted
+                `}
                 >
                 {item.type}
                 </Button>
