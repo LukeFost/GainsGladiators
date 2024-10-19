@@ -4,6 +4,11 @@ export const Route = createLazyFileRoute('/profile')({
   component: About,
 })
 
+import {useAccount} from 'wagmi'
+
 function About() {
-  return <div className="p-2">Hello from About!</div>
+  const {address} = useAccount();
+  return (<>
+  <div>{address}</div>
+  </>)
 }
