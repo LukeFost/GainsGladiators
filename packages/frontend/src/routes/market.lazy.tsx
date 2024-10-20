@@ -1,7 +1,7 @@
 import MarketPlace from '@/MarketPlace';
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { useNetwork, useSwitchNetwork } from 'wagmi'
+
 
 export const Route = createLazyFileRoute('/market')({
   component: MarketRoute,
