@@ -13,7 +13,21 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+@layer utilities {                                                                                    
+  .bg-background {                                                                                    
+    background-image: url('/background.PNG');                                                         
+    background-size: cover;                                                                           
+    background-position: center;                                                                      
+    background-repeat: no-repeat;                                                                     
+    background-attachment: fixed;                                                                     
+    transition: background-position 0.1s ease-out;                                                    
+  }                                                                                                   
+} 
+
 @layer base {
+  body {
+    @apply bg-background text-foreground bg-background; 
+  }
   :root {
     --background: 10 34% 17%; /* Bistre background color */
     --foreground: 44 99% 50%; /* Mikado Yellow text color */
