@@ -8,12 +8,18 @@
 
 import { motion } from "framer-motion";
 import { useState, useCallback } from "react";
+import { toast } from 'react-toastify';
 import { ScrollModal } from "./ScrollModal";
 
 export default function PredictionMarket() {
     const [progress, setProgress] = useState(0);
     const [inputValue, setInputValue] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleSign = useCallback(() => {
+        toast.success("Signed successfully!");
+        setIsModalOpen(false);
+    }, []);
 
     const handleClick = useCallback(() => {
         setIsModalOpen(true);
@@ -73,6 +79,12 @@ export default function PredictionMarket() {
             {/* ScrollModal */}
             <ScrollModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <p className="text-center">Your input: {inputValue}</p>
+                <button 
+                    onClick={handleSign}
+                    className="mt-4 px-4 py-2 bg-gray-200 text-black rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                >
+                    Sign Here
+                </button>
             </ScrollModal>
         </div>
     );
