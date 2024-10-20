@@ -11,10 +11,9 @@ export class Router {
     async handleQuery(query: string): Promise<TaskResult> {
         console.log('Router: Starting to handle query:', query);
         const task: Task = {
-            id: 'task-1',
+            id: 'task-' + Date.now(),
             description: JSON.stringify(query),
             parameters: {
-                // Add any default search parameters here
                 maxResults: 5,
                 yearRange: '2020-2023'
             }
