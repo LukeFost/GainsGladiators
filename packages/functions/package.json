@@ -2,14 +2,18 @@
   "name": "@gainsgladiators/functions",
   "version": "0.0.0",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.675.0",
     "@e2b/code-interpreter": "^1.0.2",
     "@gainsgladiators/core": "*",
     "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
     "fuzzysort": "^3.1.0",
     "openai": "^4.68.1",
-    "sst": "*"
+    "sst": "*",
+    "unzipper": "^0.12.3"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.137"
+    "@types/aws-lambda": "^8.10.137",
+    "@types/unzipper": "^0.10.10"
   }
 }

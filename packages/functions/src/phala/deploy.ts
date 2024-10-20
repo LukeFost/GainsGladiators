@@ -1,78 +1,58 @@
-// import 'dotenv/config'
-import { Sandbox } from '@e2b/code-interpreter'
+import { execSync } from 'child_process';
+import { writeFileSync, existsSync, rmSync, createReadStream } from 'fs';
+import { createUnzip } from 'zlib';
+import { Extract } from 'unzipper';
 
-async function deployPhalaNetwork(secrets: Record<string, string>) {
-  const sandbox = await Sandbox.create({ timeoutMs: 600000 }) // 10 minutes timeout
-
+export async function handler(event: any, context: any) {
+  const tempDir = '/tmp/phala-agent';
   try {
-    // Step 1: Clone the Phala Network repository
-    await clonePhalaNetwork(sandbox)
+    // Remove the directory if it already exists
+    if (existsSync(tempDir)) {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+    // Clone the repository
+    execSync(`git clone https://github.com/LukeFost/the_real_new_phala_agent.git ${tempDir}`);
 
-    // Step 2: Install dependencies
-    await runCommand(sandbox, 'cd ai-agent-contract-viem && npm install')
+    // Change to the project directory
+    process.chdir(tempDir);
 
-    // Step 3: Build the project
-    await runCommand(sandbox, 'cd ai-agent-contract-viem && npm run build')
+    // Unzip node_modules.zip
+    await new Promise((resolve, reject) => {
+      createReadStream('node_modules.zip')
+        .pipe(createUnzip())
+        .pipe(Extract({ path: '.' }))
+        .on('close', resolve)
+        .on('error', reject);
+    });
 
-    // Step 4: Set secrets
-    await setSecrets(sandbox, secrets)
+    // Build the project (assuming the build script is in package.json)
+    execSync('npm run build');
 
-    // Step 5: Publish the agent
-    await runCommand(sandbox, 'cd ai-agent-contract-viem && npm run publish-agent')
-
-    // Step 6: Retrieve and return deployment info
-    return await getDeploymentInfo(sandbox)
-  } finally {
-    await sandbox.kill()
-  }
-}
-
-async function clonePhalaNetwork(sandbox: Sandbox) {
-  const repoUrl = 'https://github.com/Phala-Network/ai-agent-contract-viem.git'
-  await runCommand(sandbox, `git clone ${repoUrl}`)
-}
-
-async function runCommand(sandbox: Sandbox, command: string) {
-  console.log(`Running command: ${command}`)
-  const result = await sandbox.commands.run(command)
-  console.log(result.stdout)
-  if (result.exitCode !== 0) {
-    throw new Error(`Command failed: ${command}\n${result.stderr}`)
-  }
-}
-
-async function setSecrets(sandbox: Sandbox, secrets: Record<string, string>) {
-  const secretsContent = JSON.stringify(secrets)
-  await sandbox.files.write('/home/user/ai-agent-contract-viem/secrets/default.json', secretsContent)
-  await runCommand(sandbox, 'cd ai-agent-contract-viem && npm run set-secrets secrets/default.json')
-}
-
-async function getDeploymentInfo(sandbox: Sandbox) {
-  const logPath = '/home/user/ai-agent-contract-viem/logs/latestDeployment.json'
-  const logContent = await sandbox.files.read(logPath)
-  return JSON.parse(logContent)
-}
-
-export async function deploy(event: any, context: any) {
-  try {
-    // Extract secrets from the event or environment variables
+    // Set secrets
     const secrets = {
       secretSalt: event.secretSalt || process.env.SECRET_SALT || "SALTY_BAE",
       thirdwebApiKey: event.thirdwebApiKey || process.env.THIRDWEB_API_KEY,
-      // Add any other secrets you want to pass
-    }
+    };
+    writeFileSync('secrets/default.json', JSON.stringify(secrets));
 
-    const deploymentInfo = await deployPhalaNetwork(secrets)
-    console.log('Deployment successful:', deploymentInfo)
+    // Assuming the set-secrets script is available and works with bun
+    execSync('npm run set-secrets secrets/default.json');
+
+    // Publish the agent
+    execSync('npm run publish-agent');
+
+    // Read deployment info
+    const deploymentInfo = execSync('cat logs/latestDeployment.json').toString();
+
     return {
       statusCode: 200,
-      body: JSON.stringify(deploymentInfo)
-    }
+      body: JSON.stringify({ message: "Deployment successful", info: JSON.parse(deploymentInfo) })
+    };
   } catch (error) {
-    console.error('Deployment failed:', error)
+    console.error('Deployment failed:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: error.message })
-    }
+    };
   }
 }
