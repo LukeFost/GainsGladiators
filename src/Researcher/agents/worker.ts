@@ -1,21 +1,16 @@
 import { Task, TaskResult } from '../shared/taskTypes';
 import OpenAI from 'openai';
+import { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/chat';
+import { getAvailableTools } from '../tools/toolDefinitions';
 
 export class WorkerAgent {
     id: string;
     isBusy: boolean = false;
     private openai: OpenAI;
 
-    constructor(id: string, apiKey: string) {
+    constructor(id: string, openai: OpenAI) {
         this.id = id;
-        this.openai = new OpenAI({
-            apiKey: apiKey,
-            baseURL: "https://openrouter.ai/api/v1",
-            defaultHeaders: {
-                "HTTP-Referer": "https://gainsgladiators.com",
-                "X-Title": "GainsGladiators",
-            }
-        });
+        this.openai = openai;
     }
 
     /**
@@ -38,7 +33,7 @@ export class WorkerAgent {
                 id: task.id,
                 workerId: this.id,
                 status: 'error',
-                error: `Worker ${this.id} failed to execute task ${task.id}: ${error.message}`
+                error: `Worker ${this.id} failed to execute task ${task.id}: ${error instanceof Error ? error.message : String(error)}`
             };
         } finally {
             this.isBusy = false;
@@ -50,7 +45,7 @@ export class WorkerAgent {
      * @param task - The task to perform.
      * @returns The result of the task.
      */
-    private async performTask(task: Task): Promise<any> {
+    private async performTask(task: Task): Promise<string> {
         const prompt = `
         Execute the following task:
         ${task.description}
@@ -61,16 +56,26 @@ export class WorkerAgent {
         Provide a detailed response addressing all aspects of the task.
         `;
 
+        const messages: ChatCompletionMessageParam[] = [
+            { role: "user", content: prompt }
+        ];
+
         const completion = await this.openai.chat.completions.create({
             model: "openai/gpt-3.5-turbo",
-            messages: [{ role: "user", content: prompt }],
+            messages: messages,
+            tools: getAvailableTools() as ChatCompletionTool[],
+            tool_choice: "auto"
         });
 
-        const content = completion.choices[0].message.content;
-        if (!content) {
+        const responseMessage = completion.choices[0].message;
+
+        if (responseMessage.content) {
+            return responseMessage.content;
+        } else if (responseMessage.tool_calls) {
+            // Handle tool calls if needed
+            return "Tool calls were made, but handling is not implemented yet.";
+        } else {
             throw new Error("Failed to generate response for the task");
         }
-
-        return content;
     }
 }
