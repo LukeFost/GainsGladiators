@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { useState } from "react";
 import { ScrollModal } from "./ScrollModal";
 import { PlaceBet } from "./CreateMarket";
@@ -7,9 +6,13 @@ import { WithdrawBet } from "./WithdrawBet";
 import { usePredictionStore } from '../stores/predictionStore';
 import { useReadContract } from 'wagmi';
 import { predictABI, predictAddress } from '../abi/predictionABI';
+import { Button } from "@/components/ui/button";
+import { MintTokens } from "./MintTokens";
 
 export default function PredictionMarket() {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isPlaceBetModalOpen, setIsPlaceBetModalOpen] = useState(false);
+    const [isClaimRewardModalOpen, setIsClaimRewardModalOpen] = useState(false);
+    const [isWithdrawBetModalOpen, setIsWithdrawBetModalOpen] = useState(false);
     const { getOdds } = usePredictionStore();
 
     const { data: contractOdds, isError, isLoading } = useReadContract({
@@ -20,7 +23,6 @@ export default function PredictionMarket() {
 
     const { oddsA, oddsB } = getOdds();
     
-    // Calculate the progress based on the contract odds
     const totalOdds = contractOdds ? Number(contractOdds[0]) + Number(contractOdds[1]) : 0;
     const progress = totalOdds > 0 ? Math.round((Number(contractOdds[0]) / totalOdds) * 100) : 50;
 
@@ -30,30 +32,23 @@ export default function PredictionMarket() {
                 <h1 className="text-2xl font-bold mb-4 text-center text-black">AI Prediction Market</h1>
                 <p className="mb-4 text-center text-black">Bet on which AI model will perform better!</p>
                 
-                {/* Odds Display */}
                 <div className="mb-6">
                     <div className="h-8 w-full flex rounded-full overflow-hidden">
-                        <motion.div
+                        <div
                             className="h-full"
                             style={{
                                 width: `${progress}%`,
                                 background: 'linear-gradient(90deg, #FFD700, #FFA500)',
                                 boxShadow: '0 0 10px 2px rgba(255, 215, 0, 0.5)'
                             }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${progress}%` }}
-                            transition={{ duration: 0.5 }}
                         />
-                        <motion.div
+                        <div
                             className="h-full"
                             style={{
                                 width: `${100 - progress}%`,
                                 background: 'linear-gradient(90deg, #8B0000, #B22222)',
                                 boxShadow: '0 0 10px 2px rgba(139, 0, 0, 0.5)'
                             }}
-                            initial={{ width: `${100 - progress}%` }}
-                            animate={{ width: `${100 - progress}%` }}
-                            transition={{ duration: 0.5 }}
                         />
                     </div>
                     <p className="mt-2 text-center text-black">
@@ -68,15 +63,31 @@ export default function PredictionMarket() {
                     </p>
                 </div>
 
-                {/* Betting Components */}
-                <PlaceBet />
-                <ClaimReward />
-                <WithdrawBet />
+                <MintTokens />
+
+                <div className="space-y-4">
+                    <Button onClick={() => setIsPlaceBetModalOpen(true)} className="w-full">
+                        Place Your Bet
+                    </Button>
+                    <Button onClick={() => setIsClaimRewardModalOpen(true)} className="w-full">
+                        Claim Reward
+                    </Button>
+                    <Button onClick={() => setIsWithdrawBetModalOpen(true)} className="w-full">
+                        Withdraw Bet
+                    </Button>
+                </div>
             </div>
 
-            {/* ScrollModal - Kept for future use */}
-            <ScrollModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <p className="text-center">Modal content goes here</p>
+            <ScrollModal isOpen={isPlaceBetModalOpen} onClose={() => setIsPlaceBetModalOpen(false)}>
+                <PlaceBet />
+            </ScrollModal>
+
+            <ScrollModal isOpen={isClaimRewardModalOpen} onClose={() => setIsClaimRewardModalOpen(false)}>
+                <ClaimReward />
+            </ScrollModal>
+
+            <ScrollModal isOpen={isWithdrawBetModalOpen} onClose={() => setIsWithdrawBetModalOpen(false)}>
+                <WithdrawBet />
             </ScrollModal>
         </div>
     );

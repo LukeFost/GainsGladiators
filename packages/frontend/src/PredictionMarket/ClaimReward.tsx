@@ -1,6 +1,5 @@
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { predictABI, predictAddress } from '../abi/predictionABI'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
 function useClaimReward() {
@@ -31,21 +30,14 @@ export function ClaimReward() {
   const { claimReward, isPending, isConfirming, isConfirmed, error } = useClaimReward()
 
   return (
-    <Card className="w-[350px]">
-      <CardHeader>
-        <CardTitle>Claim Reward</CardTitle>
-        <CardDescription>Claim your winnings after the market is settled</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p>Click the button below to claim your reward if you've won.</p>
-      </CardContent>
-      <CardFooter className="flex flex-col items-start">
-        <Button onClick={claimReward} disabled={isPending || isConfirming}>
-          {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : 'Claim Reward'}
-        </Button>
-        {isConfirmed && <p className="mt-2 text-green-600">Reward claimed successfully!</p>}
-        {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}
-      </CardFooter>
-    </Card>
+    <div className="w-full space-y-4">
+      <h2 className="text-2xl font-bold mb-4 text-black">Claim Reward</h2>
+      <p className="text-black">Click the button below to claim your reward if you've won.</p>
+      <Button onClick={claimReward} disabled={isPending || isConfirming} className="w-full">
+        {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : 'Claim Reward'}
+      </Button>
+      {isConfirmed && <p className="mt-2 text-green-600">Reward claimed successfully!</p>}
+      {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}
+    </div>
   )
 }

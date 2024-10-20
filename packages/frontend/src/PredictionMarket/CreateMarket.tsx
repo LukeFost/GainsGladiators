@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useWriteContract, useWaitForTransactionReceipt, useBalance, useAccount, useReadContract } from 'wagmi'
 import { predictABI, predictAddress } from '../abi/predictionABI'
 import { parseEther, formatEther } from 'viem'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -59,7 +58,6 @@ export function PlaceBet() {
     token: erc20Address,
   })
 
-  // Read current token approval
   const { data: currentApproval } = useReadContract({
     address: erc20Address,
     abi: mockerc20ABI,
@@ -85,7 +83,6 @@ export function PlaceBet() {
     }
 
     try {
-      // Approve the contract to spend tokens if needed
       if (parseEther(amount) > currentApproval) {
         await writeContract({
           address: erc20Address,
@@ -95,7 +92,6 @@ export function PlaceBet() {
         })
       }
 
-      // Place the bet
       await placeBet(amount, betOnA)
       if (isConfirmed) {
         updateTotalBets(betOnA, parseFloat(amount))
@@ -106,80 +102,52 @@ export function PlaceBet() {
     }
   }
 
-  const handleMintTokens = async () => {
-    try {
-      await writeContract({
-        address: erc20Address,
-        abi: mockerc20ABI,
-        functionName: 'mint',
-        args: [userAddress, parseEther('100')], // Minting 100 tokens
-      })
-      alert('100 tokens minted successfully!')
-    } catch (err) {
-      console.error('Error minting tokens:', err)
-      alert('Failed to mint tokens. Please try again.')
-    }
-  }
-
   return (
-    <Card className="w-full mb-4">
-      <CardHeader>
-        <CardTitle>Place Your Bet</CardTitle>
-        <CardDescription>Choose an AI model and place your bet</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid w-full items-center gap-4">
-          <div className="flex flex-col space-y-1.5">
-            <Label htmlFor="amount">Bet Amount (in ETH)</Label>
-            <Input 
-              id="amount" 
-              placeholder="Enter amount" 
-              value={amount} 
-              onChange={(e) => setAmount(e.target.value)}
-              type="number"
-              step="0.01"
-            />
-          </div>
-          <div className="flex flex-col space-y-1.5">
-            <Label>Choose AI Model</Label>
-            <div className="flex justify-between">
-              <Button 
-                onClick={() => setBetOnA(true)} 
-                variant={betOnA ? "default" : "outline"}
-              >
-                AI Model A
-              </Button>
-              <Button 
-                onClick={() => setBetOnA(false)} 
-                variant={!betOnA ? "default" : "outline"}
-              >
-                AI Model B
-              </Button>
-            </div>
-          </div>
-          <div className="flex flex-col space-y-1.5">
-            <p>Current Balance: {balance ? formatEther(balance.value) : '0'} tokens</p>
-            <p>Current Approval: {tokenApproval} tokens</p>
+    <div className="w-full space-y-4">
+      <h2 className="text-2xl font-bold mb-4 text-black">Place Your Bet</h2>
+      <div className="grid w-full items-center gap-4">
+        <div className="flex flex-col space-y-1.5">
+          <Label htmlFor="amount">Bet Amount (in ETH)</Label>
+          <Input 
+            id="amount" 
+            placeholder="Enter amount" 
+            value={amount} 
+            onChange={(e) => setAmount(e.target.value)}
+            type="number"
+            step="0.01"
+          />
+        </div>
+        <div className="flex flex-col space-y-1.5">
+          <Label>Choose AI Model</Label>
+          <div className="flex justify-between">
+            <Button 
+              onClick={() => setBetOnA(true)} 
+              variant={betOnA ? "default" : "outline"}
+            >
+              AI Model A
+            </Button>
+            <Button 
+              onClick={() => setBetOnA(false)} 
+              variant={!betOnA ? "default" : "outline"}
+            >
+              AI Model B
+            </Button>
           </div>
         </div>
-      </CardContent>
-      <CardFooter className="flex flex-col items-start">
-        <Button 
-          onClick={handlePlaceBet} 
-          disabled={isPending || isConfirming || !amount}
-          className="w-full mb-2"
-        >
-          {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : `Place Bet on ${betOnA ? 'AI Model A' : 'AI Model B'}`}
-        </Button>
-        <Button 
-          onClick={handleMintTokens} 
-          className="w-full"
-        >
-          Mint 100 Tokens
-        </Button>
-        {isConfirmed && <p className="mt-2 text-green-600">Bet placed successfully!</p>}
-        {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}
-      </CardFooter>
-    </Card>
+        <div className="flex flex-col space-y-1.5">
+          <p>Current Balance: {balance ? formatEther(balance.value) : '0'} tokens</p>
+          <p>Current Approval: {tokenApproval} tokens</p>
+        </div>
+      </div>
+      <Button 
+        onClick={handlePlaceBet} 
+        disabled={isPending || isConfirming || !amount}
+        className="w-full"
+      >
+        {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : `Place Bet on ${betOnA ? 'AI Model A' : 'AI Model B'}`}
+      </Button>
+      {isConfirmed && <p className="mt-2 text-green-600">Bet placed successfully!</p>}
+      {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}
+    </div>
   )
 }
