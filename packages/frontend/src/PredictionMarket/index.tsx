@@ -10,7 +10,7 @@ import { predictABI, predictAddress } from '../abi/predictionABI';
 
 export default function PredictionMarket() {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const { getOdds, updateOdds } = usePredictionStore();
+    const { getOdds, setOdds } = usePredictionStore();
 
     const { data: contractOdds, isError, isLoading } = useReadContract({
         address: predictAddress,
@@ -21,9 +21,9 @@ export default function PredictionMarket() {
     useEffect(() => {
         if (contractOdds) {
             const [oddsA, oddsB] = contractOdds;
-            updateOdds(Number(oddsA), Number(oddsB));
+            setOdds(Number(oddsA), Number(oddsB));
         }
-    }, [contractOdds, updateOdds]);
+    }, [contractOdds, setOdds]);
 
     const { oddsA, oddsB } = getOdds();
     const progress = oddsA ? Math.round((oddsA / (oddsA + oddsB)) * 100) : 50;
