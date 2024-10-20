@@ -8,6 +8,10 @@ export class WorkerPool {
         this.workers = Array.from({ length: numWorkers }, (_, i) => new WorkerAgent(`worker-${i + 1}`));
     }
 
+    getWorkerCount(): number {
+        return this.workers.length;
+    }
+
     async executeTasks(tasks: Task[]): Promise<TaskResult[]> {
         const promises = this.workers.map((worker, index) => {
             if (index < tasks.length) {

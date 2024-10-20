@@ -10,7 +10,8 @@ export class Router {
 
     async handleQuery(query: string): Promise<TaskResult[]> {
         console.log('Router: Starting to handle query:', query);
-        const tasks: Task[] = Array.from({ length: this.workerPool.workers.length }, (_, i) => ({
+        const workerCount = this.workerPool.getWorkerCount();
+        const tasks: Task[] = Array.from({ length: workerCount }, (_, i) => ({
             id: `task-${Date.now()}-${i}`,
             description: query,
             parameters: {
