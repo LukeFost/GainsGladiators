@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScrollModal } from "./ScrollModal";
 import { PlaceBet } from "./CreateMarket";
 import { ClaimReward } from "./ClaimReward";
@@ -17,6 +17,13 @@ export default function PredictionMarket() {
         abi: predictABI,
         functionName: 'getOdds',
     });
+
+    useEffect(() => {
+        if (contractOdds) {
+            const [oddsA, oddsB] = contractOdds;
+            getOdds(Number(oddsA), Number(oddsB));
+        }
+    }, [contractOdds,]);
 
     const { oddsA, oddsB } = getOdds();
     const progress = oddsA ? Math.round((oddsA / (oddsA + oddsB)) * 100) : 50;
@@ -61,7 +68,7 @@ export default function PredictionMarket() {
                     <p className="mt-2 text-center text-black">
                         {isLoading ? "" : 
                          isError ? "" : 
-                         `Raw Odds - AI A: ${contractOdds ? contractOdds[0] : 'N/A'} | AI B: ${contractOdds ? contractOdds[1] : 'N/A'}`}
+                         `Raw Odds - AI A: ${oddsA} | AI B: ${oddsB}`}
                     </p>
                 </div>
 
