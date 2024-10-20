@@ -53,7 +53,7 @@ export const AnimatedButton: React.FC<AnimatedButtonProps> = ({ onClick, childre
           exit={{ opacity: 0 }}
           className="flex items-center justify-center w-full h-full"
         >
-          <img src="/stamped.png" alt="Stamped" className="w-1/2 h-1/2 object-contain" />
+          <img src="/stamped.png" alt="Stamped" className="w-1/4 h-1/4 object-contain" />
         </motion.div>
       )}
     </AnimatePresence>

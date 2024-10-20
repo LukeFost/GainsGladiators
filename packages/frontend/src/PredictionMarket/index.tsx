@@ -31,11 +31,11 @@ export default function PredictionMarket() {
     }, []);
 
     const handleSign = useCallback(() => {
-        setIsModalOpen(false);
+        console.log("I was signed")
     }, []);
 
     return (
-        <div className="relative min-h-screen flex flex-col items-center justify-center bg-gray-100">
+        <div className="relative min-h-screen flex flex-col items-center justify-center">
             {/* Background Pillars */}
             <div className="absolute inset-y-0 left-0 w-24 h-screen">
                 <img src="/pillar.png" alt="Left Pillar" className="w-full h-full object-cover" />
@@ -75,7 +75,6 @@ export default function PredictionMarket() {
                 </div>
             </div>
 
-            {/* ScrollModal */}
             {/* ScrollModal */}
             <ScrollModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <p className="text-center">Your input: {inputValue}</p>
