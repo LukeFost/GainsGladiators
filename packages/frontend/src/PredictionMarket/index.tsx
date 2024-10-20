@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { useState, useCallback } from "react";
 import { ScrollModal } from "./ScrollModal";
 import { AnimatedButton } from "./AnimatedButton";
+import { CreateMarket } from "./CreateMarket";
 
 export default function PredictionMarket() {
     const [progress, setProgress] = useState(0);
@@ -73,6 +74,7 @@ export default function PredictionMarket() {
                         Submit
                     </button>
                 </div>
+                <CreateMarket />
             </div>
 
             {/* ScrollModal */}
