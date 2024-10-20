@@ -25,22 +25,29 @@ export default function PredictionMarket() {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center">
             {/* Main Content */}
-            <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-                <h1 className="text-2xl font-bold mb-4 text-center">AI Prediction Market</h1>
-                <p className="mb-4 text-center">Bet on which AI model will perform better!</p>
+            <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-xl">
+                <h1 className="text-2xl font-bold mb-4 text-center text-black">AI Prediction Market</h1>
+                <p className="mb-4 text-center text-black">Bet on which AI model will perform better!</p>
                 
                 {/* Odds Display */}
                 <div className="mb-6">
-                    <div className="h-4 w-full bg-gray-200 rounded-full">
+                    <div className="h-8 w-full flex rounded-full overflow-hidden">
                         <motion.div
-                            className="h-full bg-blue-600 rounded-full"
+                            className="h-full bg-blue-600"
                             style={{ width: `${progress}%` }}
                             initial={{ width: 0 }}
                             animate={{ width: `${progress}%` }}
                             transition={{ duration: 0.5 }}
                         />
+                        <motion.div
+                            className="h-full bg-red-600"
+                            style={{ width: `${100 - progress}%` }}
+                            initial={{ width: `${100 - progress}%` }}
+                            animate={{ width: `${100 - progress}%` }}
+                            transition={{ duration: 0.5 }}
+                        />
                     </div>
-                    <p className="mt-2 text-center">Current Odds - AI A: {progress}% | AI B: {100 - progress}%</p>
+                    <p className="mt-2 text-center text-black">Current Odds - AI A: {progress}% | AI B: {100 - progress}%</p>
                 </div>
 
                 {/* Betting Components */}
