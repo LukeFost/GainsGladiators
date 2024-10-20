@@ -5,6 +5,7 @@ import { Link } from '@tanstack/react-router' // Use TanStack's Link for routing
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import PrivyComponent from '@/Privy'
+import LogoutButton from '@/components/LogoutButton'
 
 const NavLinks = () => (
   <>
@@ -16,29 +17,17 @@ const NavLinks = () => (
       <ShoppingCart className="h-4 w-4" />
       <span>Market</span>
     </Link>
-    <Link to="/view" className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary">
-      <Eye className="h-4 w-4" />
-      <span>View</span>
-    </Link>
     <Link to="/aiAgentCreation" className="flex items-center space-x 
     text-sm font-medium transition-colors hover:text-primary">
       <Bot className="h-4 w-4" />
       <span>AI Agent</span>
-    </Link>
-    <Link to="/battleBots" className="flex items-center space-x-2 text-sm font-medium        
-    transition-colors hover:text-primary">
-      <Swords className="h-4 w-4" />
-      <span>Battle Bots</span>
-    </Link>
-    <Link to="/profile" className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary">
-      <User className="h-4 w-4" />
-      <span>Profile</span>
     </Link>
     <Link to="/predictionMarket" className="flex items-center space-x-2     
  text-sm font-medium transition-colors hover:text-primary">
       <TrendingUp className="h-4 w-4" />
       <span>Prediction</span>
     </Link>
+    <LogoutButton />
   </>
 )
 
