@@ -1,7 +1,6 @@
 import { Task, TaskResult } from '../shared/taskTypes';
-import OpenAI from 'openai';
-import ChatCompletionMessageParam from 'openai';
-import ChatCompletionTool from "openai"
+import { OpenAI } from 'openai';
+import { ChatCompletionCreateParams } from 'openai';
 import { getAvailableTools } from '../tools/toolDefinitions';
 
 export class WorkerAgent {
@@ -57,26 +56,26 @@ export class WorkerAgent {
         Provide a detailed response addressing all aspects of the task.
         `;
 
-        const messages: ChatCompletionMessageParam[] = [
-            { role: "user", content: prompt }
+        const messages: ChatCompletionCreateParams.Message[] = [
+            { role: 'user', content: prompt }
         ];
 
         const completion = await this.openai.chat.completions.create({
-            model: "openai/gpt-3.5-turbo",
+            model: 'gpt-3.5-turbo',
             messages: messages,
-            tools: getAvailableTools() as ChatCompletionTool[],
-            tool_choice: "auto"
+            functions: getAvailableTools(),
+            function_call: 'auto'
         });
 
         const responseMessage = completion.choices[0].message;
 
         if (responseMessage.content) {
             return responseMessage.content;
-        } else if (responseMessage.tool_calls) {
-            // Handle tool calls if needed
-            return "Tool calls were made, but handling is not implemented yet.";
+        } else if (responseMessage.function_call) {
+            // Handle function calls if needed
+            return 'Function call was made, but handling is not implemented yet.';
         } else {
-            throw new Error("Failed to generate response for the task");
+            throw new Error('Failed to generate response for the task');
         }
     }
 }
