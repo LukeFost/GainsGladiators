@@ -7,28 +7,24 @@
 // Add a modal component for when the button is clicked and the modal should have the background of scroll.gif and have that gif play once and stop at the end. 
 
 import { motion } from "framer-motion";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ScrollModal } from "./ScrollModal";
 import { AnimatedButton } from "./AnimatedButton";
-import { CreateMarket } from "./CreateMarket";
+import { PlaceBet } from "./CreateMarket";
+import { ClaimReward } from "./ClaimReward";
+import { WithdrawBet } from "./WithdrawBet";
+import { usePredictionStore } from '../stores/predictionStore';
 
 export default function PredictionMarket() {
-    const [progress, setProgress] = useState(0);
     const [inputValue, setInputValue] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { getOdds } = usePredictionStore();
+
+    const { oddsA } = getOdds();
+    const progress = Math.round(oddsA * 100);
 
     const handleClick = useCallback(() => {
         setIsModalOpen(true);
-        // Simulate progress increase
-        const interval = setInterval(() => {
-            setProgress((prev) => {
-                if (prev >= 100) {
-                    clearInterval(interval);
-                    return 100;
-                }
-                return prev + 10;
-            });
-        }, 500);
     }, []);
 
     const handleSign = useCallback(() => {
@@ -49,7 +45,7 @@ export default function PredictionMarket() {
                             transition={{ duration: 0.5 }}
                         />
                     </div>
-                    <p className="mt-2 text-center">{progress}%</p>
+                    <p className="mt-2 text-center">AI A: {progress}% | AI B: {100 - progress}%</p>
                 </div>
                 <div className="flex mb-6">
                     <input
@@ -66,7 +62,9 @@ export default function PredictionMarket() {
                         Submit
                     </button>
                 </div>
-                <CreateMarket />
+                <PlaceBet />
+                <ClaimReward />
+                <WithdrawBet />
             </div>
 
             {/* ScrollModal */}
