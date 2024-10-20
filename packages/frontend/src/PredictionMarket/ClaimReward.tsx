@@ -59,7 +59,7 @@ export function ClaimReward() {
             transition={{ duration: 1 }}
             className="flex justify-center mt-4"
           >
-            <img src="/Thumbdownnormal.gif" alt="Claim Animation" className="w-32 h-32" />
+            <img src="/Thumbupnormal.gif" alt="Claim Animation" className="w-32 h-32" />
           </motion.div>
         )}
       </AnimatePresence>

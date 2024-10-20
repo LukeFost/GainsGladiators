@@ -20,20 +20,6 @@ const NavLinks = () => (
       <Eye className="h-4 w-4" />
       <span>View</span>
     </Link>
-    <Link to="/aiAgentCreation" className="flex items-center space-x 
-    text-sm font-medium transition-colors hover:text-primary">
-      <Bot className="h-4 w-4" />
-      <span>AI Agent</span>
-    </Link>
-    <Link to="/battleBots" className="flex items-center space-x-2 text-sm font-medium        
-    transition-colors hover:text-primary">
-      <Swords className="h-4 w-4" />
-      <span>Battle Bots</span>
-    </Link>
-    <Link to="/profile" className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary">
-      <User className="h-4 w-4" />
-      <span>Profile</span>
-    </Link>
     <Link to="/predictionMarket" className="flex items-center space-x-2     
  text-sm font-medium transition-colors hover:text-primary">
       <TrendingUp className="h-4 w-4" />

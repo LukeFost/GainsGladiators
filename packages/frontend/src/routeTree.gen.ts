@@ -17,11 +17,8 @@ import { Route as rootRoute } from './routes/__root'
 // Create Virtual Routes
 
 const ViewLazyImport = createFileRoute('/view')()
-const ProfileLazyImport = createFileRoute('/profile')()
 const PredictionMarketLazyImport = createFileRoute('/predictionMarket')()
 const MarketLazyImport = createFileRoute('/market')()
-const BattleBotsLazyImport = createFileRoute('/battleBots')()
-const AiAgentCreationLazyImport = createFileRoute('/aiAgentCreation')()
 const IndexLazyImport = createFileRoute('/')()
 
 // Create/Update Routes
@@ -31,12 +28,6 @@ const ViewLazyRoute = ViewLazyImport.update({
   path: '/view',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/view.lazy').then((d) => d.Route))
-
-const ProfileLazyRoute = ProfileLazyImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/profile.lazy').then((d) => d.Route))
 
 const PredictionMarketLazyRoute = PredictionMarketLazyImport.update({
   id: '/predictionMarket',
@@ -51,20 +42,6 @@ const MarketLazyRoute = MarketLazyImport.update({
   path: '/market',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/market.lazy').then((d) => d.Route))
-
-const BattleBotsLazyRoute = BattleBotsLazyImport.update({
-  id: '/battleBots',
-  path: '/battleBots',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/battleBots.lazy').then((d) => d.Route))
-
-const AiAgentCreationLazyRoute = AiAgentCreationLazyImport.update({
-  id: '/aiAgentCreation',
-  path: '/aiAgentCreation',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() =>
-  import('./routes/aiAgentCreation.lazy').then((d) => d.Route),
-)
 
 const IndexLazyRoute = IndexLazyImport.update({
   id: '/',
@@ -83,20 +60,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
-    '/aiAgentCreation': {
-      id: '/aiAgentCreation'
-      path: '/aiAgentCreation'
-      fullPath: '/aiAgentCreation'
-      preLoaderRoute: typeof AiAgentCreationLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/battleBots': {
-      id: '/battleBots'
-      path: '/battleBots'
-      fullPath: '/battleBots'
-      preLoaderRoute: typeof BattleBotsLazyImport
-      parentRoute: typeof rootRoute
-    }
     '/market': {
       id: '/market'
       path: '/market'
@@ -109,13 +72,6 @@ declare module '@tanstack/react-router' {
       path: '/predictionMarket'
       fullPath: '/predictionMarket'
       preLoaderRoute: typeof PredictionMarketLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileLazyImport
       parentRoute: typeof rootRoute
     }
     '/view': {
@@ -132,83 +88,46 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
-  '/aiAgentCreation': typeof AiAgentCreationLazyRoute
-  '/battleBots': typeof BattleBotsLazyRoute
   '/market': typeof MarketLazyRoute
   '/predictionMarket': typeof PredictionMarketLazyRoute
-  '/profile': typeof ProfileLazyRoute
   '/view': typeof ViewLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
-  '/aiAgentCreation': typeof AiAgentCreationLazyRoute
-  '/battleBots': typeof BattleBotsLazyRoute
   '/market': typeof MarketLazyRoute
   '/predictionMarket': typeof PredictionMarketLazyRoute
-  '/profile': typeof ProfileLazyRoute
   '/view': typeof ViewLazyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
-  '/aiAgentCreation': typeof AiAgentCreationLazyRoute
-  '/battleBots': typeof BattleBotsLazyRoute
   '/market': typeof MarketLazyRoute
   '/predictionMarket': typeof PredictionMarketLazyRoute
-  '/profile': typeof ProfileLazyRoute
   '/view': typeof ViewLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/aiAgentCreation'
-    | '/battleBots'
-    | '/market'
-    | '/predictionMarket'
-    | '/profile'
-    | '/view'
+  fullPaths: '/' | '/market' | '/predictionMarket' | '/view'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/aiAgentCreation'
-    | '/battleBots'
-    | '/market'
-    | '/predictionMarket'
-    | '/profile'
-    | '/view'
-  id:
-    | '__root__'
-    | '/'
-    | '/aiAgentCreation'
-    | '/battleBots'
-    | '/market'
-    | '/predictionMarket'
-    | '/profile'
-    | '/view'
+  to: '/' | '/market' | '/predictionMarket' | '/view'
+  id: '__root__' | '/' | '/market' | '/predictionMarket' | '/view'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
-  AiAgentCreationLazyRoute: typeof AiAgentCreationLazyRoute
-  BattleBotsLazyRoute: typeof BattleBotsLazyRoute
   MarketLazyRoute: typeof MarketLazyRoute
   PredictionMarketLazyRoute: typeof PredictionMarketLazyRoute
-  ProfileLazyRoute: typeof ProfileLazyRoute
   ViewLazyRoute: typeof ViewLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
-  AiAgentCreationLazyRoute: AiAgentCreationLazyRoute,
-  BattleBotsLazyRoute: BattleBotsLazyRoute,
   MarketLazyRoute: MarketLazyRoute,
   PredictionMarketLazyRoute: PredictionMarketLazyRoute,
-  ProfileLazyRoute: ProfileLazyRoute,
   ViewLazyRoute: ViewLazyRoute,
 }
 
@@ -225,31 +144,19 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/aiAgentCreation",
-        "/battleBots",
         "/market",
         "/predictionMarket",
-        "/profile",
         "/view"
       ]
     },
     "/": {
       "filePath": "index.lazy.tsx"
     },
-    "/aiAgentCreation": {
-      "filePath": "aiAgentCreation.lazy.tsx"
-    },
-    "/battleBots": {
-      "filePath": "battleBots.lazy.tsx"
-    },
     "/market": {
       "filePath": "market.lazy.tsx"
     },
     "/predictionMarket": {
       "filePath": "predictionMarket.lazy.tsx"
-    },
-    "/profile": {
-      "filePath": "profile.lazy.tsx"
     },
     "/view": {
       "filePath": "view.lazy.tsx"

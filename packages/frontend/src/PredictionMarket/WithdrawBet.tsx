@@ -74,7 +74,7 @@ export function WithdrawBet() {
             transition={{ duration: 1 }}
             className="flex justify-center mt-4"
           >
-            <img src="/Thumbdownnormal.gif" alt="Withdraw Animation" className="w-32 h-32" />
+            <img src="/Thumbdownnormal.gif" alt="Withdraw Animation" className="w-64 h-64" />
           </motion.div>
         )}
       </AnimatePresence>
