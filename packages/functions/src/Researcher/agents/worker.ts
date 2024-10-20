@@ -4,6 +4,7 @@ import { getTrendingPools } from '../tools/coingecko';
 import { getTrendingPoolsForNetwork } from '../tools/flowgecko';
 import { processQueryWithLLM } from '../shared/llm';
 import { analysisPrompt } from '../prompts/analysisPrompt';
+import { getProtocolData, getProtocolFees } from '../tools/defiLlama';
 
 export class WorkerAgent {
   id: string;
@@ -63,7 +64,14 @@ export class WorkerAgent {
       analysisPrompt.system,
       analysisPrompt.user(queryJson.originalQuery, enhancedQuery, searchResult)
     );
-    
+
+    // Extract protocols from the search results
+    const searchResultJson = JSON.parse(searchResult);
+    const protocols = this.extractProtocols(searchResultJson);
+
+    // Fetch additional data for each protocol
+    const protocolData = await this.fetchProtocolData(protocols);
+
     const response = {
       originalQuery: queryJson.originalQuery,
       formattedQuery: formattedQuery,
@@ -72,12 +80,39 @@ export class WorkerAgent {
       trendingPoolsEthereum: trendingPoolsEthereum,
       keywords: queryJson.keywords,
       context: queryJson.context,
-      searchResults: JSON.parse(searchResult),
-      analysis: JSON.parse(analysis)
+      searchResults: searchResultJson,
+      analysis: JSON.parse(analysis),
+      protocolData: protocolData
     };
 
     console.log(`WorkerAgent: ${this.id} completed analysis for task ${task.id}`);
 
     return JSON.stringify(response);
+  }
+
+  private extractProtocols(searchResults: any): string[] {
+    // Implement logic to extract protocol names from search results
+    // This is a placeholder implementation and should be adjusted based on the actual structure of your search results
+    const protocols: Set<string> = new Set();
+    if (Array.isArray(searchResults)) {
+      searchResults.forEach(result => {
+        if (result.protocol) {
+          protocols.add(result.protocol.toLowerCase());
+        }
+      });
+    }
+    return Array.from(protocols);
+  }
+
+  private async fetchProtocolData(protocols: string[]): Promise<any> {
+    const protocolData: any = {};
+    for (const protocol of protocols) {
+      const data = await getProtocolData(protocol);
+      const fees = await getProtocolFees(protocol);
+      if (data || fees) {
+        protocolData[protocol] = { data, fees };
+      }
+    }
+    return protocolData;
   }
 }
