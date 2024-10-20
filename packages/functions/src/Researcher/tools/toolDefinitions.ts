@@ -1,4 +1,6 @@
-export const tools = [
+import { ChatCompletionTool } from 'openai/resources/chat';
+
+export const tools: ChatCompletionTool[] = [
   {
     type: "function",
     function: {
@@ -18,6 +20,6 @@ export const tools = [
   }
 ];
 
-export function getAvailableTools() {
+export function getAvailableTools(): ChatCompletionTool[] {
     return tools;
 }
