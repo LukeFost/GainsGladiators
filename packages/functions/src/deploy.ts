@@ -1,9 +1,10 @@
 import { spawn } from 'child_process';
-import { writeFileSync } from 'fs';
+import { writeFileSync, appendFileSync } from 'fs';
 
 function log(message: string) {
-  console.log(`[${new Date().toISOString()}] ${message}`);
-  writeFileSync('./deploy.log', `${message}\n`, { flag: 'a' });
+  const logMessage = `[${new Date().toISOString()}] ${message}`;
+  console.log(logMessage);
+  appendFileSync('./deploy.log', `${logMessage}\n`);
 }
 
 export async function handler(event: any) {
@@ -23,11 +24,13 @@ export async function handler(event: any) {
     log('Setting secret as environment variable');
     process.env.SECRET_KEY = secret;
 
-    log('Spawning publish process');
+    log('Attempting to spawn publish process');
     const publish = spawn('node', ['scripts/publish.js'], { env: process.env });
+    log('Publish process spawned successfully');
     
-    log('Spawning setSecrets process');
+    log('Attempting to spawn setSecrets process');
     const setSecrets = spawn('node', ['scripts/setSecrets.js'], { env: process.env });
+    log('SetSecrets process spawned successfully');
 
     let publishOutput = '';
     let setSecretsOutput = '';
@@ -61,20 +64,31 @@ export async function handler(event: any) {
     });
 
     log('Waiting for both processes to complete');
-    await Promise.all([
-      new Promise<void>((resolve, reject) => {
-        publish.on('close', (code) => {
-          log(`Publish process exited with code ${code}`);
-          code === 0 ? resolve() : reject(new Error(`Publish process failed with code ${code}`));
-        });
-      }),
-      new Promise<void>((resolve, reject) => {
-        setSecrets.on('close', (code) => {
-          log(`SetSecrets process exited with code ${code}`);
-          code === 0 ? resolve() : reject(new Error(`SetSecrets process failed with code ${code}`));
-        });
-      }),
-    ]);
+    const timeout = 60000; // 60 seconds timeout
+    try {
+      await Promise.race([
+        Promise.all([
+          new Promise<void>((resolve, reject) => {
+            publish.on('close', (code) => {
+              log(`Publish process exited with code ${code}`);
+              code === 0 ? resolve() : reject(new Error(`Publish process failed with code ${code}`));
+            });
+          }),
+          new Promise<void>((resolve, reject) => {
+            setSecrets.on('close', (code) => {
+              log(`SetSecrets process exited with code ${code}`);
+              code === 0 ? resolve() : reject(new Error(`SetSecrets process failed with code ${code}`));
+            });
+          }),
+        ]),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Deployment timed out after 60 seconds')), timeout))
+      ]);
+    } catch (error) {
+      log(`Error during deployment: ${error.message}`);
+      publish.kill();
+      setSecrets.kill();
+      throw error;
+    }
 
     log('Deployment process completed successfully');
     return {
