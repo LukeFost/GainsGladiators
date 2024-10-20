@@ -9,12 +9,11 @@ export default $config({
     };
   },
   async run() {
-    await import("./infra/storage");
     await import("./infra/web");
     const api = await import("./infra/api");
 
     return {
-      api: api.myApi.url,
+      deploy: api.deployFunction.url,
       research: api.researcherAi.url
     };
   },

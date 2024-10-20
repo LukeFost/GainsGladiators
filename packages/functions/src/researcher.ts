@@ -1,17 +1,6 @@
-import { Resource } from "sst";
-import { QueryOptimizer } from "./Researcher/agents/optimizer";
 import { Router } from "./Researcher/router";
-import OpenAI from "openai";
 
-// Initialize the OpenAI client
-const openai = new OpenAI({
-  apiKey: Resource.OpenRouterApiKey.value,
-  baseURL: "https://openrouter.ai/api/v1",
-});
-
-// Pass the OpenAI instance to QueryOptimizer
-const optimizer = new QueryOptimizer(openai);
-const router = new Router(optimizer, 3, openai);
+const router = new Router();
 
 export async function handler(event: any) {
   try {

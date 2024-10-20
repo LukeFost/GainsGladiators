@@ -1,11 +1,21 @@
 {
   "name": "@gainsgladiators/functions",
   "version": "0.0.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "publish": "npm run build && ts-node Deploy/scripts/publish.ts"
+  },
   "dependencies": {
+    "@e2b/code-interpreter": "^1.0.2",
     "@gainsgladiators/core": "*",
+    "@phala/wapo-env": "^0.9.4",
     "axios": "^1.7.7",
+    "fuzzysort": "^3.1.0",
+    "hono": "^4.6.5",
     "openai": "^4.68.1",
-    "sst": "*"
+    "sst": "*",
+    "superjson": "^2.2.1",
+    "thirdweb": "^5.63.1"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.137"

@@ -1,85 +1,199 @@
 import { Task, TaskResult } from '../shared/taskTypes';
-import OpenAI from 'openai';
-import { getAvailableTools } from '../tools/toolDefinitions';
+import { exaSearch } from '../tools/searcher';
+import { getTrendingPools } from '../tools/coingecko';
+import { getTrendingPoolsForNetwork } from '../tools/flowgecko';
+import { processQueryWithLLM } from '../shared/llm';
+import { analysisPrompt } from '../prompts/analysisPrompt';
+import { getProtocolData, getProtocolFees, findProtocol } from '../tools/defiLlama';
+import fuzzysort from 'fuzzysort';
 
 export class WorkerAgent {
-    id: string;
-    isBusy: boolean = false;
-    private openai: OpenAI;
+  id: string;
+  isBusy: boolean = false;
 
-    constructor(id: string, openai: OpenAI) {
-        this.id = id;
-        this.openai = openai;
+  constructor(id: string) {
+    this.id = id;
+    console.log(`WorkerAgent: ${this.id} initialized`);
+  }
+
+  async executeTask(task: Task): Promise<TaskResult> {
+    console.log(`WorkerAgent: ${this.id} starting task ${task.id}`);
+    this.isBusy = true;
+    try {
+      const result = await this.performTask(task);
+      console.log(`WorkerAgent: ${this.id} completed task ${task.id} successfully`);
+      return {
+        id: task.id,
+        workerId: this.id,
+        status: 'success',
+        result: result
+      };
+    } catch (error) {
+      console.error(`WorkerAgent: ${this.id} failed to execute task ${task.id}:`, error);
+      return {
+        id: task.id,
+        workerId: this.id,
+        status: 'error',
+        error: `WorkerAgent: ${this.id} failed to execute task ${task.id}: ${error instanceof Error ? error.message : String(error)}`
+      };
+    } finally {
+      this.isBusy = false;
     }
+  }
 
-    /**
-     * Executes a given task.
-     * @param task - The task to execute.
-     * @returns The result of the task execution.
-     */
-    async executeTask(task: Task): Promise<TaskResult> {
-        console.log(`Worker ${this.id} starting task ${task.id}`);
-        this.isBusy = true;
-        try {
-            const result = await this.performTask(task);
-            console.log(`Worker ${this.id} completed task ${task.id} successfully`);
-            console.log(`Task ${task.id} result:`, result);
-            return {
-                id: task.id,
-                workerId: this.id,
-                status: 'success',
-                result: result
-            };
-        } catch (error) {
-            console.error(`Worker ${this.id} failed to execute task ${task.id}:`, error);
-            return {
-                id: task.id,
-                workerId: this.id,
-                status: 'error',
-                error: `Worker ${this.id} failed to execute task ${task.id}: ${error instanceof Error ? error.message : String(error)}`
-            };
-        } finally {
-            this.isBusy = false;
-            console.log(`Worker ${this.id} is now available`);
+  private async performTask(task: Task): Promise<string> {
+    console.log(`WorkerAgent: ${this.id} performing task ${task.id}`);
+    const queryJson = JSON.parse(task.description);
+    const formattedQuery = queryJson.formattedQuery || queryJson.originalQuery;
+
+    console.log(`WorkerAgent: ${this.id} fetching trending pools for task ${task.id}`);
+    const trendingPools = await getTrendingPools();
+    const trendingPoolsQuery = trendingPools.join(', ');
+
+    console.log(`WorkerAgent: ${this.id} fetching trending pools for Ethereum network for task ${task.id}`);
+    const trendingPoolsEthereum = await getTrendingPoolsForNetwork('eth');
+    const trendingPoolsEthereumQuery = trendingPoolsEthereum.join(', ');
+
+    const enhancedQuery = `${formattedQuery} focusing on these trending tokens across all networks: ${trendingPoolsQuery}, and these trending tokens on Ethereum: ${trendingPoolsEthereumQuery}`;
+    console.log(`WorkerAgent: ${this.id} executing exaSearch with enhanced query for task ${task.id}`);
+    const searchResult = await exaSearch(enhancedQuery, task.parameters);
+    
+    console.log(`WorkerAgent: ${this.id} generating analysis for task ${task.id}`);
+    const analysis = await processQueryWithLLM(
+      enhancedQuery,
+      analysisPrompt.model,
+      analysisPrompt.system,
+      analysisPrompt.user(queryJson.originalQuery, enhancedQuery, searchResult)
+    );
+
+    // Extract protocols from the search results
+    const searchResultJson = JSON.parse(searchResult);
+    const protocols = this.extractProtocols(searchResultJson);
+
+    // Extract protocols from LLM analysis
+    const llmProtocols = this.extractLLMProtocols(JSON.parse(analysis));
+
+    // Combine and deduplicate protocols
+    const allProtocols = [...new Set([...protocols, ...llmProtocols.identified, ...llmProtocols.interested])];
+
+    // Fetch additional data for each protocol
+    const protocolData = await this.fetchProtocolData(allProtocols);
+
+    const response = {
+      originalQuery: queryJson.originalQuery,
+      formattedQuery: formattedQuery,
+      enhancedQuery: enhancedQuery,
+      trendingPoolsAllNetworks: trendingPools,
+      trendingPoolsEthereum: trendingPoolsEthereum,
+      keywords: queryJson.keywords,
+      context: queryJson.context,
+      searchResults: searchResultJson,
+      analysis: JSON.parse(analysis),
+      extractedProtocols: protocols,
+      llmIdentifiedProtocols: llmProtocols.identified,
+      llmInterestedProtocols: llmProtocols.interested,
+      protocolData: protocolData
+    };
+
+    console.log(`WorkerAgent: ${this.id} completed analysis for task ${task.id}`);
+
+    return JSON.stringify(response);
+  }
+
+  private extractProtocols(searchResults: any): string[] {
+    const protocols: Set<string> = new Set();
+    const protocolRegex = /(?:^|\s)([A-Z][a-z]+(?:[A-Z][a-z]+)*(?:\.(?:finance|io|org|com))?)\b/g;
+    const protocolKeywords = ['protocol', 'dapp', 'platform', 'exchange', 'dex'];
+
+    if (Array.isArray(searchResults)) {
+      searchResults.forEach(result => {
+        // Direct extraction
+        if (result.protocol) {
+          protocols.add(result.protocol.toLowerCase());
         }
-    }
 
-    /**
-     * Performs the actual task processing using AI.
-     * @param task - The task to perform.
-     * @returns The result of the task.
-     */
-    private async performTask(task: Task): Promise<string> {
-        const prompt = `
-        Execute the following task:
-        ${task.description}
+        // Regex matching
+        const content = JSON.stringify(result);
+        let match;
+        while ((match = protocolRegex.exec(content)) !== null) {
+          protocols.add(match[1].toLowerCase());
+        }
 
-        Parameters:
-        ${JSON.stringify(task.parameters, null, 2)}
-
-        Provide a detailed response addressing all aspects of the task.
-        `;
-
-        const messages = [
-            { role: 'user', content: prompt }
-        ];
-
-        const completion = await this.openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
-            messages: messages,
-            functions: getAvailableTools(),
-            function_call: 'auto'
+        // Keyword-based extraction
+        protocolKeywords.forEach(keyword => {
+          const regex = new RegExp(`${keyword}\\s+([A-Z][a-z]+(?:[A-Z][a-z]+)*)`);
+          const keywordMatch = content.match(regex);
+          if (keywordMatch) {
+            protocols.add(keywordMatch[1].toLowerCase());
+          }
         });
-
-        const responseMessage = completion.choices[0].message;
-
-        if (responseMessage.content) {
-            return responseMessage.content;
-        } else if (responseMessage.function_call) {
-            // Handle function calls if needed
-            return 'Function call was made, but handling is not implemented yet.';
-        } else {
-            throw new Error('Failed to generate response for the task');
-        }
+      });
     }
+
+    return Array.from(protocols);
+  }
+
+  private extractLLMProtocols(analysis: any): { identified: string[], interested: string[] } {
+    const identified = new Set<string>();
+    const interested = new Set<string>();
+
+    if (Array.isArray(analysis.identifiedProtocols)) {
+      analysis.identifiedProtocols.forEach((protocol: string) => identified.add(protocol.toLowerCase()));
+    }
+
+    if (Array.isArray(analysis.interestedProtocols)) {
+      analysis.interestedProtocols.forEach((protocol: string) => interested.add(protocol.toLowerCase()));
+    }
+
+    return {
+      identified: Array.from(identified),
+      interested: Array.from(interested)
+    };
+  }
+
+  private async fetchProtocolData(protocols: string[]): Promise<any> {
+    const protocolData: any = {};
+    const matchedProtocolsMap = await this.fuzzyFindProtocols(protocols);
+
+    for (const [protocol, matchedProtocols] of matchedProtocolsMap.entries()) {
+      for (const matchedProtocol of matchedProtocols) {
+        const data = await getProtocolData(matchedProtocol);
+        const fees = await getProtocolFees(matchedProtocol);
+        if (data || fees) {
+          protocolData[matchedProtocol] = { data, fees };
+        }
+      }
+      if (matchedProtocols.length === 0) {
+        console.log(`No matching protocol found for: ${protocol}`);
+      }
+    }
+    return protocolData;
+  }
+
+  private async fuzzyFindProtocols(protocolNames: string[]): Promise<Map<string, string[]>> {
+    const allProtocols = await findProtocol('');
+    if (!Array.isArray(allProtocols) || allProtocols.length === 0) {
+      console.log('No protocols found or invalid response from findProtocol');
+      return new Map();
+    }
+
+    const preparedTargets = allProtocols.map(p => ({ name: p, prepared: fuzzysort.prepare(p) }));
+    const matchedProtocols = new Map<string, string[]>();
+
+    for (const protocolName of protocolNames) {
+      const results = fuzzysort.go(protocolName, preparedTargets, {
+        key: 'prepared',
+        threshold: -10000,
+        limit: 10  // Get top 10 matches
+      });
+
+      const matches = results
+        .filter(result => result.score > -1000)  // Adjust this threshold as needed
+        .map(result => result.obj.name);
+
+      matchedProtocols.set(protocolName, matches);
+    }
+
+    return matchedProtocols;
+  }
 }
