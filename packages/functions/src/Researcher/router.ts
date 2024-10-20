@@ -33,30 +33,12 @@ export class Router {
         }));
 
         try {
+            console.log('Router: Executing tasks with WorkerPool');
             const results = await this.workerPool.executeTasks(tasks);
-            console.log('Router: All tasks completed');
+            console.log('Router: All tasks completed. Number of results:', results.length);
             
-            // Limit the response size
-            const maxResponseSize = 30000; // Adjust this value as needed
-            let responseString = JSON.stringify({ results });
-            let truncated = false;
-
-            if (responseString.length > maxResponseSize) {
-                const truncatedResults = [];
-                let currentSize = 0;
-                for (const result of results) {
-                    const resultString = JSON.stringify(result);
-                    if (currentSize + resultString.length > maxResponseSize) {
-                        truncated = true;
-                        break;
-                    }
-                    truncatedResults.push(result);
-                    currentSize += resultString.length;
-                }
-                return { results: truncatedResults, truncated };
-            }
-
-            return { results, truncated };
+            console.log('Router: Final results:', JSON.stringify(results, null, 2));
+            return { results, truncated: false };
         } catch (error) {
             console.error('Router: Error handling query:', error);
             throw error;
