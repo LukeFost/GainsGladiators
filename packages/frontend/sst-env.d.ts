@@ -22,15 +22,6 @@ declare module "sst" {
       "type": "sst.aws.StaticSite"
       "url": string
     }
-    "MyApi": {
-      "name": string
-      "type": "sst.aws.Function"
-      "url": string
-    }
-    "MyBucket": {
-      "name": string
-      "type": "sst.aws.Bucket"
-    }
     "OpenRouterApiKey": {
       "type": "sst.sst.Secret"
       "value": string
@@ -39,6 +30,10 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Function"
       "url": string
+    }
+    "THIRDWEB_PUB_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
     }
   }
 }
