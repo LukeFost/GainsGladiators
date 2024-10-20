@@ -1,6 +1,8 @@
-import { spawn } from 'child_process'
-import { readFileSync, appendFileSync, existsSync, mkdirSync } from 'fs'
-import 'dotenv/config'
+import { spawn } from 'child_process';
+import { readFileSync, appendFileSync, existsSync, mkdirSync } from 'fs';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 function log(message: string) {
   const timestamp = new Date().toISOString();
@@ -111,11 +113,11 @@ export async function setSecrets(jsonFilePath: string = './secrets/default.json'
 }
 
 // If this script is run directly (not imported as a module)
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const jsonFilePath = args.length === 1 ? args[0] : './secrets/default.json';
 
-  setSecrets(jsonFilePath).then((url) => {
+  setSecrets(jsonFilePath).then(({ url }) => {
     console.log(`Secrets set successfully. Agent URL: ${url}`);
   }).catch((error) => {
     console.error('Setting secrets failed:', error);
