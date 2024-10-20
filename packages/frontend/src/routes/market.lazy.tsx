@@ -1,12 +1,22 @@
 import MarketPlace from '@/MarketPlace';
 import { createLazyFileRoute } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { useNetwork, useSwitchNetwork } from 'wagmi'
 
 export const Route = createLazyFileRoute('/market')({
-  component: About,
+  component: MarketRoute,
 })
 
-function About() {
-  return (<>
-  <MarketPlace/>
-  </>);
+function MarketRoute() {
+  const { chain } = useNetwork()
+  const { switchNetwork } = useSwitchNetwork()
+
+  useEffect(() => {
+    const storyProtocolChainId = 1513
+    if (chain?.id !== storyProtocolChainId) {
+      switchNetwork?.(storyProtocolChainId)
+    }
+  }, [chain, switchNetwork])
+
+  return <MarketPlace />;
 }
