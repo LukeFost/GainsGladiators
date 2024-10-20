@@ -17,19 +17,19 @@ export const SwordsAnimation: React.FC = () => {
       {animationState === 'playing' ? (
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: 2 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 flex items-center justify-center z-10"
+          className="absolute inset-0 flex items-center justify-center"
         >
-          <img src="/swords.gif" alt="Swords Animation" className="w-1/2 h-auto" />
+          <img src="/SwordClash.gif" alt="Swords Animation" className="w-1/2 h-auto" />
         </motion.div>
       ) : (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="absolute inset-0 flex items-center justify-center z-10"
+          className="absolute inset-0 flex items-center justify-center"
         >
-          <img src="/static_sword.png" alt="Static Sword" className="w-1/2 h-auto" />
+          <img src="/SwordTogether.png" alt="Static Sword" className="w-1/2 h-auto" />
         </motion.div>
       )}
     </AnimatePresence>
