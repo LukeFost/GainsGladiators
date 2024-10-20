@@ -32,19 +32,23 @@ export async function handler(event: any) {
     process.env.SECRET_KEY = secret;
 
     log('Starting publish process');
-    const cid = await publish();
-    log(`Publish completed. CID: ${cid}`);
+    const publishResult = await publish();
+    log(`Publish completed. CID: ${publishResult.cid}`);
+    publishResult.log.forEach(logEntry => log(logEntry));
 
     log('Starting setSecrets process');
-    const agentUrl = await setSecrets();
-    log(`SetSecrets completed. Agent URL: ${agentUrl}`);
+    const secretsResult = await setSecrets();
+    log(`SetSecrets completed. Agent URL: ${secretsResult.url}`);
+    secretsResult.log.forEach(logEntry => log(logEntry));
 
     log('Deployment process completed successfully');
     return {
       statusCode: 200,
       body: JSON.stringify({ 
-        cid: cid,
-        agentUrl: agentUrl
+        cid: publishResult.cid,
+        agentUrl: secretsResult.url,
+        publishLog: publishResult.log,
+        secretsLog: secretsResult.log
       }),
     };
   } catch (error) {

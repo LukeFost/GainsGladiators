@@ -36,39 +36,45 @@ function logToFile(cid: string, token: string, key: string, url: string) {
   log('Log entry added to secrets.log');
 }
 
-export async function setSecrets(jsonFilePath: string = './secrets/default.json'): Promise<string> {
+export async function setSecrets(jsonFilePath: string = './secrets/default.json'): Promise<{ url: string, log: string[] }> {
   return new Promise((resolve, reject) => {
     try {
-      log(`Using secrets file: ${jsonFilePath}`);
+      const secretsLog: string[] = [];
+      const logAndStore = (message: string) => {
+        log(message);
+        secretsLog.push(message);
+      };
+
+      logAndStore(`Using secrets file: ${jsonFilePath}`);
 
       // Read and parse the JSON file for secrets and latest deployment info
       const secrets = readJsonFile(jsonFilePath);
       const latestDeployment = readJsonFile('./logs/latestDeployment.json');
 
-      log('Starting setSecrets process');
+      logAndStore('Starting setSecrets process');
       const gatewayUrl = 'https://wapo-testnet.phala.network';
       const cid = latestDeployment.cid;
       const command = `curl ${gatewayUrl}/vaults -H 'Content-Type: application/json' -d '{"cid": "${cid}", "data": ${JSON.stringify(secrets)}}'`;
-      log(`Storing secrets for CID: ${cid}`);
+      logAndStore(`Storing secrets for CID: ${cid}`);
       const childProcess = spawn(command, { shell: true })
       
       let stdout = ''
       childProcess.stdout.on('data', (data) => {
         process.stdout.write(data)
         stdout += data
-        log(`stdout: ${data}`);
+        logAndStore(`stdout: ${data}`);
       })
 
       let stderr = ''
       childProcess.stderr.on('data', (data) => {
         process.stderr.write(data)
         stderr += data
-        log(`stderr: ${data}`);
+        logAndStore(`stderr: ${data}`);
       })
 
       childProcess.on('close', (code) => {
         if (code === 0) {
-          log('Command completed successfully');
+          logAndStore('Command completed successfully');
           const regex = /"token":\s*"([a-zA-Z0-9]+)","key":\s*"([a-zA-Z0-9]+)"/;
           const match = stdout.match(regex);
 
@@ -76,21 +82,21 @@ export async function setSecrets(jsonFilePath: string = './secrets/default.json'
             const token = match[1];
             const key = match[2];
             const url = `${gatewayUrl}/ipfs/${cid}?key=${key}`;
-            log(`Secrets set successfully. Agent URL: ${url}`);
+            logAndStore(`Secrets set successfully. Agent URL: ${url}`);
             console.log(`\n\nSecrets set successfully. Go to the URL below to interact with your agent:`);
             console.log(`${url}`);
             // Log the details to a file
             logToFile(cid, token, key, url);
-            resolve(url);
+            resolve({ url, log: secretsLog });
           } else {
             const error = 'Error: Secrets failed to set. Token and key not found in response.';
-            log(error);
+            logAndStore(error);
             console.log('Secrets failed to set');
             reject(new Error(error));
           }
         } else {
           const error = `Error: Command exited with code ${code}`;
-          log(error);
+          logAndStore(error);
           console.log(`Command exited with code ${code}`);
           reject(new Error(error));
         }
