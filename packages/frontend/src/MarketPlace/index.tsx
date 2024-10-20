@@ -2,6 +2,8 @@ import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ApproveButton } from "./approveButton"
+import { MintButton } from "./mintButton"
 
 interface MarketplaceItem {
   title: string
@@ -9,6 +11,7 @@ interface MarketplaceItem {
   price: number
   type: "Agent" | "Data" | "Actions"
   bulletPoints: string[]
+  tokenId: number
 }
 
 const marketplaceItems: MarketplaceItem[] = [
@@ -81,21 +84,27 @@ export default function MarketPlace() {
                 ))}
                 </ul>
             </div>
-            <div className="flex justify-between items-center">
-                <Button
-                variant="outline"
-                className={`
-                    ${item.type === 'Agent' ? 'bg-accent text-accent-foreground' : 
-                      item.type === 'Data' ? 'bg-secondary text-secondary-foreground' : 
-                      'bg-destructive text-destructive-foreground'}
-                    border-2 border-border hover:bg-muted
-                `}
-                >
-                {item.type}
-                </Button>
-                <span className="text-lg font-bold" style={{ color: 'hsl(var(--foreground))' }}>
-                {item.price} USDC
-                </span>
+            <div className="flex flex-col space-y-2">
+                <div className="flex justify-between items-center">
+                    <Button
+                    variant="outline"
+                    className={`
+                        ${item.type === 'Agent' ? 'bg-accent text-accent-foreground' : 
+                          item.type === 'Data' ? 'bg-secondary text-secondary-foreground' : 
+                          'bg-destructive text-destructive-foreground'}
+                        border-2 border-border hover:bg-muted
+                    `}
+                    >
+                    {item.type}
+                    </Button>
+                    <span className="text-lg font-bold" style={{ color: 'hsl(var(--foreground))' }}>
+                    {item.price} USDC
+                    </span>
+                </div>
+                <div className="flex justify-between items-center">
+                    <ApproveButton spender="0x1234567890123456789012345678901234567890" amount={item.price} />
+                    <MintButton tokenId={item.tokenId} />
+                </div>
             </div>
             </div>
         ))}
