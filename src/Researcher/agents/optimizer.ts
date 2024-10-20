@@ -9,6 +9,7 @@ export class QueryOptimizer {
             apiKey: apiKey,
             baseURL: "https://openrouter.ai/api/v1",
             defaultHeaders: {
+                "HTTP-Referer": "https://gainsgladiators.com",
                 "X-Title": "GainsGladiators",
             }
         });
@@ -24,7 +25,7 @@ export class QueryOptimizer {
         return actions.map((action, index) => ({
             id: `task-${index + 1}`,
             description: action.description,
-            params: action.params
+            parameters: action.parameters
         }));
     }
 
@@ -33,11 +34,11 @@ export class QueryOptimizer {
      * @param query - The input query string.
      * @returns An array of action objects.
      */
-    private async parseQueryIntoActions(query: string): Promise<Array<{ description: string; params: Record<string, any> }>> {
+    private async parseQueryIntoActions(query: string): Promise<Array<{ description: string; parameters: Record<string, any> }>> {
         const prompt = `
         Given the following research query, break it down into a series of actionable tasks. 
         Each task should be specific and include any relevant parameters.
-        Format the output as a JSON array of objects, where each object has a 'description' and a 'params' field.
+        Format the output as a JSON array of objects, where each object has a 'description' and a 'parameters' field.
 
         Query: ${query}
 
@@ -45,7 +46,7 @@ export class QueryOptimizer {
         [
             {
                 "description": "Search for recent academic papers on topic X",
-                "params": {
+                "parameters": {
                     "topic": "X",
                     "yearRange": "2020-2023",
                     "maxResults": 5
@@ -53,7 +54,7 @@ export class QueryOptimizer {
             },
             {
                 "description": "Analyze key findings from the papers",
-                "params": {
+                "parameters": {
                     "focusAreas": ["methodology", "results", "conclusions"]
                 }
             }
@@ -73,7 +74,7 @@ export class QueryOptimizer {
 
         try {
             const parsedContent = JSON.parse(content);
-            return parsedContent.tasks || [];
+            return parsedContent || [];
         } catch (error) {
             console.error("Error parsing AI response:", error);
             throw new Error("Failed to parse the AI-generated tasks");

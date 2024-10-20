@@ -1,7 +1,7 @@
 export interface Task {
     id: string;
     description: string;
-    params: Record<string, any>;
+    parameters: Record<string, any>;
 }
 
 export interface TaskResult {

@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 
 export class WorkerAgent {
     id: string;
-    private isBusy: boolean = false;
+    isBusy: boolean = false;
     private openai: OpenAI;
 
     constructor(id: string, apiKey: string) {
@@ -12,6 +12,7 @@ export class WorkerAgent {
             apiKey: apiKey,
             baseURL: "https://openrouter.ai/api/v1",
             defaultHeaders: {
+                "HTTP-Referer": "https://gainsgladiators.com",
                 "X-Title": "GainsGladiators",
             }
         });
@@ -21,16 +22,11 @@ export class WorkerAgent {
      * Executes a given task.
      * @param task - The task to execute.
      * @returns The result of the task execution.
-     * @throws Error if task execution fails.
      */
     async executeTask(task: Task): Promise<TaskResult> {
-        if (this.isBusy) {
-            throw new Error(`Worker ${this.id} is currently busy`);
-        }
         this.isBusy = true;
         try {
             const result = await this.performTask(task);
-            this.isBusy = false;
             return {
                 id: task.id,
                 workerId: this.id,
@@ -38,13 +34,14 @@ export class WorkerAgent {
                 result: result
             };
         } catch (error) {
-            this.isBusy = false;
             return {
                 id: task.id,
                 workerId: this.id,
                 status: 'error',
                 error: `Worker ${this.id} failed to execute task ${task.id}: ${error.message}`
             };
+        } finally {
+            this.isBusy = false;
         }
     }
 
@@ -59,7 +56,7 @@ export class WorkerAgent {
         ${task.description}
 
         Parameters:
-        ${JSON.stringify(task.params, null, 2)}
+        ${JSON.stringify(task.parameters, null, 2)}
 
         Provide a detailed response addressing all aspects of the task.
         `;
@@ -75,13 +72,5 @@ export class WorkerAgent {
         }
 
         return content;
-    }
-
-    /**
-     * Checks if the worker is available to take on a new task.
-     * @returns True if available, else false.
-     */
-    isAvailable(): boolean {
-        return !this.isBusy;
     }
 }
