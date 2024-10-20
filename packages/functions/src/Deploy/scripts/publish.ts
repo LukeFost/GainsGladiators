@@ -92,10 +92,14 @@ async function publish() {
   }
 }
 
+import { fileURLToPath } from 'url';
+
 // Export the publish function for use in deploy.ts
 export { publish };
 
 // If this script is run directly, execute publish()
-if (require.main === module) {
+const isRunDirectly = process.argv[1] === fileURLToPath(import.meta.url);
+
+if (isRunDirectly) {
   publish();
 }
