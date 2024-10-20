@@ -107,10 +107,15 @@ export class WorkerAgent {
   private async fetchProtocolData(protocols: string[]): Promise<any> {
     const protocolData: any = {};
     for (const protocol of protocols) {
-      const data = await getProtocolData(protocol);
-      const fees = await getProtocolFees(protocol);
-      if (data || fees) {
-        protocolData[protocol] = { data, fees };
+      const matchedProtocol = await findProtocol(protocol);
+      if (matchedProtocol) {
+        const data = await getProtocolData(matchedProtocol.slug);
+        const fees = await getProtocolFees(matchedProtocol.slug);
+        if (data || fees) {
+          protocolData[matchedProtocol.name] = { data, fees };
+        }
+      } else {
+        console.log(`No matching protocol found for: ${protocol}`);
       }
     }
     return protocolData;
