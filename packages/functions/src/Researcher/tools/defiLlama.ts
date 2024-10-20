@@ -15,28 +15,26 @@ interface ProtocolData {
 interface Protocol {
   id: string;
   name: string;
-  slug: string;
 }
 
-async function getAllProtocols(): Promise<Protocol[]> {
+async function getAllProtocols(): Promise<string[]> {
   try {
     const response = await axios.get('https://api.llama.fi/protocols');
-    return response.data;
+    return response.data.map((protocol: Protocol) => protocol.name);
   } catch (error) {
     console.error('Error fetching all protocols:', error);
     return [];
   }
 }
 
-function fuzzySearch(query: string, protocols: Protocol[]): Protocol | null {
+function fuzzySearch(query: string, protocols: string[]): string | null {
   const lowerQuery = query.toLowerCase();
   return protocols.find(protocol => 
-    protocol.name.toLowerCase().includes(lowerQuery) || 
-    protocol.slug.toLowerCase().includes(lowerQuery)
+    protocol.toLowerCase().includes(lowerQuery)
   ) || null;
 }
 
-export async function findProtocol(query: string): Promise<Protocol | null> {
+export async function findProtocol(query: string): Promise<string | null> {
   const allProtocols = await getAllProtocols();
   return fuzzySearch(query, allProtocols);
 }
