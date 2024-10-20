@@ -56,11 +56,11 @@ export default function PredictionMarket() {
                          isError ? "Error fetching odds" : 
                          `Current Odds - AI A: ${progress}% | AI B: ${100 - progress}%`}
                     </p>
-                    <p className="mt-2 text-center text-black">
+                    {/* <p className="mt-2 text-center text-black">
                         {isLoading ? "" : 
                          isError ? "" : 
                          `Raw Odds - AI A: ${contractOdds ? contractOdds[0] : 'N/A'} | AI B: ${contractOdds ? contractOdds[1] : 'N/A'}`}
-                    </p>
+                    </p> */}
                 </div>
 
                 <MintTokens />
