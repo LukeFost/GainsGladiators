@@ -13,7 +13,7 @@ export default $config({
     const api = await import("./infra/api");
 
     return {
-      deploy: api.deployFunction.url,
+      deploy: api.deployAi.url,
       research: api.researcherAi.url
     };
   },

@@ -5,7 +5,7 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
-    "DeployFunction": {
+    "DeployAi": {
       "name": string
       "type": "sst.aws.Function"
       "url": string

@@ -1,7 +1,7 @@
 const openRouterApiKey = new sst.Secret("OpenRouterApiKey");
 const exaApiKey = new sst.Secret("EXAAI_API_KEY")
 const e2bApiKey = new sst.Secret("E2B_API_KEY")
-const thirdwebPubApiKey = new sst.Secret("THIRDWEB_PUB_API_KEY")
+const thirdwebApiKey = new sst.Secret("THIRDWEB_PUB_API_KEY")
 
 export const researcherAi = new sst.aws.Function("Researcher",{
   handler: "packages/functions/src/researcher.handler",
@@ -12,8 +12,8 @@ export const researcherAi = new sst.aws.Function("Researcher",{
   }
 })
 
-export const deployFunction = new sst.aws.Function("DeployFunction", {
-  handler: "packages/functions/src/deploy.handler",
+export const deployAi = new sst.aws.Function("DeployAi", {
+  handler: "packages/functions/src/phala/deploy.handler",
   url: true,
-  link: [thirdwebPubApiKey],
+  link: [thirdwebApiKey, e2bApiKey],
 })
