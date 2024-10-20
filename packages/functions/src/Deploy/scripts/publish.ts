@@ -51,8 +51,6 @@ export async function publish(): Promise<{ cid: string, log: string[] }> {
 
     // Try different possible paths for the built file
     const possiblePaths = [
-      'dist/index.js',
-      'packages/functions/dist/Deploy/src/index.js',
       'dist/Deploy/src/index.js',
       '../dist/Deploy/src/index.js',
       '../../dist/Deploy/src/index.js',
