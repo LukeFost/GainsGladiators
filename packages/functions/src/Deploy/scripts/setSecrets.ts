@@ -24,7 +24,7 @@ function readJsonFile(filePath: string): any {
     return JSON.parse(fileContents);
   } catch (error) {
     log(`Error reading or parsing JSON file: ${error.message}`);
-    process.exit(1)
+    throw error;
   }
 }
 
@@ -36,69 +36,83 @@ function logToFile(cid: string, token: string, key: string, url: string) {
   log('Log entry added to secrets.log');
 }
 
-let jsonFilePath = './secrets/default.json';
+export async function setSecrets(jsonFilePath: string = './secrets/default.json'): Promise<string> {
+  return new Promise((resolve, reject) => {
+    try {
+      log(`Using secrets file: ${jsonFilePath}`);
 
-// Get the command-line arguments
-const args = process.argv.slice(2);
-if (args.length !== 1) {
-  log('Using default secrets...')
-} else {
-  jsonFilePath = args[0];
-  log(`Using custom secrets file: ${jsonFilePath}`);
-}
+      // Read and parse the JSON file for secrets and latest deployment info
+      const secrets = readJsonFile(jsonFilePath);
+      const latestDeployment = readJsonFile('./logs/latestDeployment.json');
 
-// Read and parse the JSON file for secrets and latest deployment info
-const secrets = readJsonFile(jsonFilePath);
-const latestDeployment = readJsonFile('./logs/latestDeployment.json');
+      log('Starting setSecrets process');
+      const gatewayUrl = 'https://wapo-testnet.phala.network';
+      const cid = latestDeployment.cid;
+      const command = `curl ${gatewayUrl}/vaults -H 'Content-Type: application/json' -d '{"cid": "${cid}", "data": ${JSON.stringify(secrets)}}'`;
+      log(`Storing secrets for CID: ${cid}`);
+      const childProcess = spawn(command, { shell: true })
+      
+      let stdout = ''
+      childProcess.stdout.on('data', (data) => {
+        process.stdout.write(data)
+        stdout += data
+        log(`stdout: ${data}`);
+      })
 
-try {
-  log('Starting setSecrets process');
-  const gatewayUrl = 'https://wapo-testnet.phala.network';
-  const cid = latestDeployment.cid;
-  const command = `curl ${gatewayUrl}/vaults -H 'Content-Type: application/json' -d '{"cid": "${cid}", "data": ${JSON.stringify(secrets)}}'`;
-  log(`Storing secrets for CID: ${cid}`);
-  const childProcess = spawn(command, { shell: true })
-  
-  let stdout = ''
-  childProcess.stdout.on('data', (data) => {
-    process.stdout.write(data)
-    stdout += data
-    log(`stdout: ${data}`);
-  })
+      let stderr = ''
+      childProcess.stderr.on('data', (data) => {
+        process.stderr.write(data)
+        stderr += data
+        log(`stderr: ${data}`);
+      })
 
-  let stderr = ''
-  childProcess.stderr.on('data', (data) => {
-    process.stderr.write(data)
-    stderr += data
-    log(`stderr: ${data}`);
-  })
+      childProcess.on('close', (code) => {
+        if (code === 0) {
+          log('Command completed successfully');
+          const regex = /"token":\s*"([a-zA-Z0-9]+)","key":\s*"([a-zA-Z0-9]+)"/;
+          const match = stdout.match(regex);
 
-  childProcess.on('close', (code) => {
-    if (code === 0) {
-      log('Command completed successfully');
-      const regex = /"token":\s*"([a-zA-Z0-9]+)","key":\s*"([a-zA-Z0-9]+)"/;
-      const match = stdout.match(regex);
+          if (match) {
+            const token = match[1];
+            const key = match[2];
+            const url = `${gatewayUrl}/ipfs/${cid}?key=${key}`;
+            log(`Secrets set successfully. Agent URL: ${url}`);
+            console.log(`\n\nSecrets set successfully. Go to the URL below to interact with your agent:`);
+            console.log(`${url}`);
+            // Log the details to a file
+            logToFile(cid, token, key, url);
+            resolve(url);
+          } else {
+            const error = 'Error: Secrets failed to set. Token and key not found in response.';
+            log(error);
+            console.log('Secrets failed to set');
+            reject(new Error(error));
+          }
+        } else {
+          const error = `Error: Command exited with code ${code}`;
+          log(error);
+          console.log(`Command exited with code ${code}`);
+          reject(new Error(error));
+        }
+      });
 
-      if (match) {
-        const token = match[1];
-        const key = match[2];
-        const url = `${gatewayUrl}/ipfs/${cid}?key=${key}`;
-        log(`Secrets set successfully. Agent URL: ${url}`);
-        console.log(`\n\nSecrets set successfully. Go to the URL below to interact with your agent:`);
-        console.log(`${url}`);
-        // Log the details to a file
-        logToFile(cid, token, key, url);
-      } else {
-        log('Error: Secrets failed to set. Token and key not found in response.');
-        console.log('Secrets failed to set');
-      }
-    } else {
-      log(`Error: Command exited with code ${code}`);
-      console.log(`Command exited with code ${code}`)
+    } catch (error) {
+      log(`Error: ${error.message}`);
+      console.error('Error:', error);
+      reject(error);
     }
   });
+}
 
-} catch (error) {
-  log(`Error: ${error.message}`);
-  console.error('Error:', error)
+// If this script is run directly (not imported as a module)
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  const jsonFilePath = args.length === 1 ? args[0] : './secrets/default.json';
+
+  setSecrets(jsonFilePath).then((url) => {
+    console.log(`Secrets set successfully. Agent URL: ${url}`);
+  }).catch((error) => {
+    console.error('Setting secrets failed:', error);
+    process.exit(1);
+  });
 }
