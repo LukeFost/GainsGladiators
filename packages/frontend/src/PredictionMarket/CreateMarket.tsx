@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { useWriteContract, useWaitForTransactionReceipt, useBalance } from 'wagmi'
+import { useState, useEffect } from 'react'
+import { useWriteContract, useWaitForTransactionReceipt, useBalance, useAccount, useReadContract } from 'wagmi'
 import { predictABI, predictAddress } from '../abi/predictionABI'
-import { parseEther } from 'viem'
+import { parseEther, formatEther } from 'viem'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,8 +9,7 @@ import { Button } from "@/components/ui/button"
 import { usePredictionStore } from '../stores/predictionStore'
 import { erc20ABI } from 'wagmi'
 
-// Assuming this is defined elsewhere in your project
-import { betTokenAddress } from '../abi/predictionABI'
+const betTokenAddress = '0xF00B21BaF761678740147CDaC8eC096E39D9c4CF'
 
 function usePlaceBet() {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
@@ -51,17 +50,30 @@ function usePlaceBet() {
 export function PlaceBet() {
   const [amount, setAmount] = useState('')
   const [betOnA, setBetOnA] = useState(true)
+  const [tokenApproval, setTokenApproval] = useState('0')
   const { placeBet, isPending, isConfirming, isConfirmed, error } = usePlaceBet()
   const updateTotalBets = usePredictionStore(state => state.updateTotalBets)
   const { writeContract } = useWriteContract()
-
-  // Assuming you have a way to get the user's address
-  const userAddress = '0x...' // Replace with actual user address
+  const { address: userAddress } = useAccount()
 
   const { data: balance } = useBalance({
     address: userAddress,
     token: betTokenAddress,
   })
+
+  // Read current token approval
+  const { data: currentApproval } = useReadContract({
+    address: betTokenAddress,
+    abi: erc20ABI,
+    functionName: 'allowance',
+    args: [userAddress, predictAddress],
+  })
+
+  useEffect(() => {
+    if (currentApproval) {
+      setTokenApproval(formatEther(currentApproval))
+    }
+  }, [currentApproval])
 
   const handlePlaceBet = async () => {
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
@@ -75,13 +87,15 @@ export function PlaceBet() {
     }
 
     try {
-      // Approve the contract to spend tokens
-      await writeContract({
-        address: betTokenAddress,
-        abi: erc20ABI,
-        functionName: 'approve',
-        args: [predictAddress, parseEther(amount)],
-      })
+      // Approve the contract to spend tokens if needed
+      if (parseEther(amount) > currentApproval) {
+        await writeContract({
+          address: betTokenAddress,
+          abi: erc20ABI,
+          functionName: 'approve',
+          args: [predictAddress, parseEther(amount)],
+        })
+      }
 
       // Place the bet
       await placeBet(amount, betOnA)
@@ -91,6 +105,21 @@ export function PlaceBet() {
     } catch (err) {
       console.error('Error in handlePlaceBet:', err)
       alert('Failed to approve tokens or place bet. Please try again.')
+    }
+  }
+
+  const handleMintTokens = async () => {
+    try {
+      await writeContract({
+        address: betTokenAddress,
+        abi: erc20ABI,
+        functionName: 'mint',
+        args: [userAddress, parseEther('100')], // Minting 100 tokens
+      })
+      alert('100 tokens minted successfully!')
+    } catch (err) {
+      console.error('Error minting tokens:', err)
+      alert('Failed to mint tokens. Please try again.')
     }
   }
 
@@ -118,19 +147,21 @@ export function PlaceBet() {
             <div className="flex justify-between">
               <Button 
                 onClick={() => setBetOnA(true)} 
-                variant="default"
-                className={`w-[48%] ${betOnA ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg' : 'bg-gray-200 text-gray-700'}`}
+                variant={betOnA ? "default" : "outline"}
               >
                 AI Model A
               </Button>
               <Button 
                 onClick={() => setBetOnA(false)} 
-                variant="default"
-                className={`w-[48%] ${!betOnA ? 'bg-gradient-to-r from-red-700 to-red-900 shadow-lg' : 'bg-gray-200 text-gray-700'}`}
+                variant={!betOnA ? "default" : "outline"}
               >
                 AI Model B
               </Button>
             </div>
+          </div>
+          <div className="flex flex-col space-y-1.5">
+            <p>Current Balance: {balance ? formatEther(balance.value) : '0'} tokens</p>
+            <p>Current Approval: {tokenApproval} tokens</p>
           </div>
         </div>
       </CardContent>
@@ -138,9 +169,15 @@ export function PlaceBet() {
         <Button 
           onClick={handlePlaceBet} 
           disabled={isPending || isConfirming || !amount}
-          className="w-full"
+          className="w-full mb-2"
         >
           {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : `Place Bet on ${betOnA ? 'AI Model A' : 'AI Model B'}`}
+        </Button>
+        <Button 
+          onClick={handleMintTokens} 
+          className="w-full"
+        >
+          Mint 100 Tokens
         </Button>
         {isConfirmed && <p className="mt-2 text-green-600">Bet placed successfully!</p>}
         {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}
