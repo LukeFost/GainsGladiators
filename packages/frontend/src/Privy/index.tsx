@@ -11,7 +11,8 @@ export default function Component() {
   const [error, setError] = useState<string | null>(null)
   const [isCorrectNetwork, setIsCorrectNetwork] = useState(false)
 
-  const targetChainId = 11155111 // Sepolia testnet
+  //const targetChainId = 11155111 // Sepolia testnet
+  const targetChainId = 545 // flow testnet
 
   useEffect(() => {
     if (ready && authenticated && wallets.length > 0) {
