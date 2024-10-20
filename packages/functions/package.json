@@ -2,8 +2,10 @@
   "name": "@gainsgladiators/functions",
   "version": "0.0.0",
   "dependencies": {
+    "@e2b/code-interpreter": "^1.0.2",
     "@gainsgladiators/core": "*",
     "axios": "^1.7.7",
+    "fuzzysort": "^3.1.0",
     "openai": "^4.68.1",
     "sst": "*"
   },

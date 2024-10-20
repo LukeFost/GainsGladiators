@@ -5,6 +5,15 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
+    "DeployAi": {
+      "name": string
+      "type": "sst.aws.Function"
+      "url": string
+    }
+    "E2B_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "EXAAI_API_KEY": {
       "type": "sst.sst.Secret"
       "value": string

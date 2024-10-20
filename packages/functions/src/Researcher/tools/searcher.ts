@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Resource } from 'sst';
 
 export async function exaSearch(query: string, params: any): Promise<string> {
     try {
@@ -7,7 +8,7 @@ export async function exaSearch(query: string, params: any): Promise<string> {
             ...params
         }, {
             headers: {
-                'Authorization': `Bearer ${process.env.EXAAI_API_KEY}`
+                'x-api-key': Resource.EXAAI_API_KEY.value
             }
         });
         return JSON.stringify(response.data);
