@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import { AnimatedButton } from "./AnimatedButton";
 
 interface ScrollModalProps {
   isOpen: boolean;
@@ -56,12 +57,12 @@ export const ScrollModal: React.FC<ScrollModalProps> = ({ isOpen, onClose, child
               <div className="flex-grow flex flex-col items-center justify-center text-black">
                 {children}
               </div>
-              <button
+              <AnimatedButton
                 onClick={onClose}
                 className="mt-4 px-4 py-2 mb-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 Close
-              </button>
+              </AnimatedButton>
             </motion.div>
           )}
         </AnimatePresence>
