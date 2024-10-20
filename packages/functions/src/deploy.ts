@@ -1,11 +1,11 @@
-import { appendFileSync } from 'fs';
+import * as fs from 'fs';
 import { publish } from './Deploy/scripts/publish';
 import { setSecrets } from './Deploy/scripts/setSecrets';
 
 function log(message: string) {
   const logMessage = `[${new Date().toISOString()}] ${message}`;
   console.log(logMessage);
-  appendFileSync('./deploy.log', `${logMessage}\n`);
+  fs.appendFileSync('./deploy.log', `${logMessage}\n`);
 }
 
 export async function handler(event: any) {
