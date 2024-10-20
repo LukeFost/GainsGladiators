@@ -15,5 +15,5 @@ export const researcherAi = new sst.aws.Function("Researcher",{
 export const deployAi = new sst.aws.Function("DeployAi", {
   handler: "packages/functions/src/phala/deploy.handler",
   url: true,
-  link: [thirdwebApiKey, e2bApiKey],
+  link: [thirdwebApiKey, e2bApiKey, openRouterApiKey],
 })
