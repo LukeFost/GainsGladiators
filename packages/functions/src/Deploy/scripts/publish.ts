@@ -42,6 +42,8 @@ export async function publish(): Promise<{ cid: string, log: string[] }> {
 
   try {
     logAndStore(`Current working directory: ${process.cwd()}`);
+    logAndStore(`__dirname: ${__dirname}`);
+    logAndStore(`__filename: ${__filename}`);
     logAndStore('Starting publish process');
     const gatewayUrl = 'https://wapo-testnet.phala.network';
 
@@ -51,7 +53,10 @@ export async function publish(): Promise<{ cid: string, log: string[] }> {
       'packages/functions/dist/Deploy/src/index.js',
       'dist/Deploy/src/index.js',
       '../dist/Deploy/src/index.js',
-      '../../dist/Deploy/src/index.js'
+      '../../dist/Deploy/src/index.js',
+      '../../../dist/Deploy/src/index.js',
+      '../../../../dist/Deploy/src/index.js',
+      '../../../../../dist/Deploy/src/index.js'
     ];
 
     let fileContent: string | null = null;
@@ -60,14 +65,20 @@ export async function publish(): Promise<{ cid: string, log: string[] }> {
     for (const filePath of possiblePaths) {
       const fullPath = path.resolve(process.cwd(), filePath);
       logAndStore(`Checking for file at: ${fullPath}`);
-      if (existsSync(fullPath)) {
-        fileContent = readFileSync(fullPath, 'utf-8');
-        usedPath = filePath;
-        break;
+      try {
+        if (existsSync(fullPath)) {
+          fileContent = readFileSync(fullPath, 'utf-8');
+          usedPath = filePath;
+          logAndStore(`File found and read successfully: ${fullPath}`);
+          break;
+        }
+      } catch (error) {
+        logAndStore(`Error checking/reading file at ${fullPath}: ${error.message}`);
       }
     }
 
     if (!fileContent || !usedPath) {
+      logAndStore('All possible paths checked, file not found.');
       throw new Error('Built file not found. Make sure to run the build process before deployment.');
     }
 
