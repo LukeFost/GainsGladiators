@@ -8,6 +8,7 @@ import { useReadContract } from 'wagmi';
 import { predictABI, predictAddress } from '../abi/predictionABI';
 import { Button } from "@/components/ui/button";
 import { MintTokens } from "./MintTokens";
+import { SwordsAnimation } from "./SwordsAnimation";
 
 export default function PredictionMarket() {
     const [isPlaceBetModalOpen, setIsPlaceBetModalOpen] = useState(false);
@@ -28,7 +29,8 @@ export default function PredictionMarket() {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center">
-            <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-xl">
+            <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-xl relative">
+                <SwordsAnimation />
                 <h1 className="text-2xl font-bold mb-4 text-center text-black">AI Prediction Market</h1>
                 <p className="mb-4 text-center text-black">Bet on which AI model will perform better!</p>
                 
