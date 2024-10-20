@@ -1,29 +1,35 @@
-
-
-
-// add a progress bar to the center with an input at the bottom and a button next to that
-// expose the button function to a handleClick
-// Add two pillar(/pillar.png) on either side and have them in the background going from the top to bottom max view height. 
-// Add a modal component for when the button is clicked and the modal should have the background of scroll.gif and have that gif play once and stop at the end. 
-
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScrollModal } from "./ScrollModal";
 import { PlaceBet } from "./CreateMarket";
 import { ClaimReward } from "./ClaimReward";
 import { WithdrawBet } from "./WithdrawBet";
 import { usePredictionStore } from '../stores/predictionStore';
+import { useReadContract } from 'wagmi';
+import { predictABI, predictAddress } from '../abi/predictionABI';
 
 export default function PredictionMarket() {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const { getOdds } = usePredictionStore();
+    const { getOdds, updateOdds } = usePredictionStore();
 
-    const { oddsA } = getOdds();
-    const progress = Math.round(oddsA * 100);
+    const { data: contractOdds, isError, isLoading } = useReadContract({
+        address: predictAddress,
+        abi: predictABI,
+        functionName: 'getOdds',
+    });
+
+    useEffect(() => {
+        if (contractOdds) {
+            const [oddsA, oddsB] = contractOdds;
+            updateOdds(Number(oddsA), Number(oddsB));
+        }
+    }, [contractOdds, updateOdds]);
+
+    const { oddsA, oddsB } = getOdds();
+    const progress = oddsA ? Math.round((oddsA / (oddsA + oddsB)) * 100) : 50;
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center">
-            {/* Main Content */}
             <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-xl">
                 <h1 className="text-2xl font-bold mb-4 text-center text-black">AI Prediction Market</h1>
                 <p className="mb-4 text-center text-black">Bet on which AI model will perform better!</p>
@@ -54,7 +60,16 @@ export default function PredictionMarket() {
                             transition={{ duration: 0.5 }}
                         />
                     </div>
-                    <p className="mt-2 text-center text-black">Current Odds - AI A: {progress}% | AI B: {100 - progress}%</p>
+                    <p className="mt-2 text-center text-black">
+                        {isLoading ? "Loading odds..." : 
+                         isError ? "Error fetching odds" : 
+                         `Current Odds - AI A: ${progress}% | AI B: ${100 - progress}%`}
+                    </p>
+                    <p className="mt-2 text-center text-black">
+                        {isLoading ? "" : 
+                         isError ? "" : 
+                         `Raw Odds - AI A: ${oddsA} | AI B: ${oddsB}`}
+                    </p>
                 </div>
 
                 {/* Betting Components */}
