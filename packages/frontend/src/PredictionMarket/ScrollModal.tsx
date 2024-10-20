@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 interface ScrollModalProps {
   isOpen: boolean;
@@ -7,6 +8,18 @@ interface ScrollModalProps {
 }
 
 export const ScrollModal: React.FC<ScrollModalProps> = ({ isOpen, onClose, children }) => {
+  const [isAnimationComplete, setIsAnimationComplete] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsAnimationComplete(false);
+      const timer = setTimeout(() => {
+        setIsAnimationComplete(true);
+      }, 1000); // Adjust this value to match the duration of your GIF
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -26,15 +39,9 @@ export const ScrollModal: React.FC<ScrollModalProps> = ({ isOpen, onClose, child
       >
         <div className="absolute inset-0">
           <img
-            src="/scroll_1.gif"
+            src={isAnimationComplete ? "/Scroll_Open.png" : "/scroll_1.gif"}
             alt="Scroll Animation"
             className="w-full h-full object-cover"
-            onLoad={(e) => {
-              const target = e.target as HTMLImageElement;
-              setTimeout(() => {
-                target.style.opacity = '1';
-              }, target.duration * 1000);
-            }}
           />
         </div>
         <div className="relative z-10 p-8">
