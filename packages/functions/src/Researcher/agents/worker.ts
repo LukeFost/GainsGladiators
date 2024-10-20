@@ -74,7 +74,7 @@ export class WorkerAgent {
     const llmProtocols = this.extractLLMProtocols(JSON.parse(analysis));
 
     // Combine and deduplicate protocols
-    const allProtocols = [...new Set([...protocols, ...llmProtocols])];
+    const allProtocols = [...new Set([...protocols, ...llmProtocols.identified, ...llmProtocols.interested])];
 
     // Fetch additional data for each protocol
     const protocolData = await this.fetchProtocolData(allProtocols);
@@ -90,7 +90,8 @@ export class WorkerAgent {
       searchResults: searchResultJson,
       analysis: JSON.parse(analysis),
       extractedProtocols: protocols,
-      llmIdentifiedProtocols: llmProtocols,
+      llmIdentifiedProtocols: llmProtocols.identified,
+      llmInterestedProtocols: llmProtocols.interested,
       protocolData: protocolData
     };
 
@@ -132,18 +133,22 @@ export class WorkerAgent {
     return Array.from(protocols);
   }
 
-  private extractLLMProtocols(analysis: any): string[] {
-    const protocols: Set<string> = new Set();
+  private extractLLMProtocols(analysis: any): { identified: string[], interested: string[] } {
+    const identified = new Set<string>();
+    const interested = new Set<string>();
 
-    if (analysis.identifiedProtocols) {
-      analysis.identifiedProtocols.forEach((protocol: string) => protocols.add(protocol.toLowerCase()));
+    if (Array.isArray(analysis.identifiedProtocols)) {
+      analysis.identifiedProtocols.forEach((protocol: string) => identified.add(protocol.toLowerCase()));
     }
 
-    if (analysis.interestedProtocols) {
-      analysis.interestedProtocols.forEach((protocol: string) => protocols.add(protocol.toLowerCase()));
+    if (Array.isArray(analysis.interestedProtocols)) {
+      analysis.interestedProtocols.forEach((protocol: string) => interested.add(protocol.toLowerCase()));
     }
 
-    return Array.from(protocols);
+    return {
+      identified: Array.from(identified),
+      interested: Array.from(interested)
+    };
   }
 
   private async fetchProtocolData(protocols: string[]): Promise<any> {
