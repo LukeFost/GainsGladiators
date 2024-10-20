@@ -30,7 +30,9 @@ export default function PredictionMarket() {
     return (
         <div className="min-h-screen flex flex-col items-center justify-start pt-24">
             <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-xl relative">
-                <SwordsAnimation />
+                <div className="mb-4">
+                    <SwordsAnimation />
+                </div>
                 <h1 className="text-2xl font-bold mb-4 text-center text-black">AI Prediction Market</h1>
                 <p className="mb-4 text-center text-black">Bet on which AI model will perform better!</p>
                 
