@@ -153,8 +153,9 @@ export class WorkerAgent {
 
   private async fetchProtocolData(protocols: string[]): Promise<any> {
     const protocolData: any = {};
-    for (const protocol of protocols) {
-      const matchedProtocols = await this.fuzzyFindProtocol(protocol);
+    const matchedProtocolsMap = await this.fuzzyFindProtocols(protocols);
+
+    for (const [protocol, matchedProtocols] of matchedProtocolsMap.entries()) {
       for (const matchedProtocol of matchedProtocols) {
         const data = await getProtocolData(matchedProtocol);
         const fees = await getProtocolFees(matchedProtocol);
@@ -169,23 +170,30 @@ export class WorkerAgent {
     return protocolData;
   }
 
-  private async fuzzyFindProtocol(protocolName: string): Promise<string[]> {
+  private async fuzzyFindProtocols(protocolNames: string[]): Promise<Map<string, string[]>> {
     const allProtocols = await findProtocol('');
     if (!Array.isArray(allProtocols) || allProtocols.length === 0) {
       console.log('No protocols found or invalid response from findProtocol');
-      return [];
+      return new Map();
     }
 
     const preparedTargets = allProtocols.map(p => ({ name: p, prepared: fuzzysort.prepare(p) }));
+    const matchedProtocols = new Map<string, string[]>();
 
-    const results = fuzzysort.go(protocolName, preparedTargets, {
-      key: 'prepared',
-      threshold: -10000,
-      limit: 10  // Get top 10 matches
-    });
+    for (const protocolName of protocolNames) {
+      const results = fuzzysort.go(protocolName, preparedTargets, {
+        key: 'prepared',
+        threshold: -10000,
+        limit: 10  // Get top 10 matches
+      });
 
-    return results
-      .filter(result => result.score > -1000)  // Adjust this threshold as needed
-      .map(result => result.obj.name);  // Return only the names
+      const matches = results
+        .filter(result => result.score > -1000)  // Adjust this threshold as needed
+        .map(result => result.obj.name);
+
+      matchedProtocols.set(protocolName, matches);
+    }
+
+    return matchedProtocols;
   }
 }
