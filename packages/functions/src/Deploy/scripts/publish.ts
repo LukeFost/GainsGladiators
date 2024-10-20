@@ -2,6 +2,7 @@ import { writeFileSync, existsSync, mkdirSync, appendFileSync, readFileSync } fr
 import { upload } from "thirdweb/storage";
 import dotenv from 'dotenv';
 import { Resource } from 'sst';
+import path from 'path';
 
 dotenv.config();
 
@@ -71,11 +72,15 @@ export async function publish(): Promise<{ cid: string, log: string[] }> {
           usedPath = filePath;
           logAndStore(`File found and read successfully: ${fullPath}`);
           break;
+        } else {
+          logAndStore(`File does not exist at: ${fullPath}`);
         }
       } catch (error) {
         logAndStore(`Error checking/reading file at ${fullPath}: ${error.message}`);
       }
     }
+
+    logAndStore(`Current directory contents: ${fs.readdirSync(process.cwd()).join(', ')}`);
 
     if (!fileContent || !usedPath) {
       logAndStore('All possible paths checked, file not found.');
