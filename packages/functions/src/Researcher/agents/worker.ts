@@ -170,7 +170,12 @@ export class WorkerAgent {
   }
 
   private async fuzzyFindProtocol(protocolName: string): Promise<string[]> {
-    const allProtocols = await findProtocol('');  // This now returns string[]
+    const allProtocols = await findProtocol('');
+    if (!Array.isArray(allProtocols) || allProtocols.length === 0) {
+      console.log('No protocols found or invalid response from findProtocol');
+      return [];
+    }
+
     const preparedTargets = allProtocols.map(p => ({ name: p, prepared: fuzzysort.prepare(p) }));
 
     const results = fuzzysort.go(protocolName, preparedTargets, {
@@ -180,7 +185,7 @@ export class WorkerAgent {
     });
 
     return results
-      .filter(result => result.score > 0.8)  // Filter results with score > 0.8
+      .filter(result => result.score > -1000)  // Adjust this threshold as needed
       .map(result => result.obj.name);  // Return only the names
   }
 }
