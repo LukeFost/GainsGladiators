@@ -18,5 +18,14 @@ declare module "sst" {
       "name": string
       "type": "sst.aws.Bucket"
     }
+    "OpenRouterApiKey": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "Researcher": {
+      "name": string
+      "type": "sst.aws.Function"
+      "url": string
+    }
   }
 }

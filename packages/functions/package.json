@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "dependencies": {
     "@gainsgladiators/core": "*",
+    "openai": "^4.68.1",
     "sst": "*"
   },
   "devDependencies": {

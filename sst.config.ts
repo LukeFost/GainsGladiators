@@ -15,6 +15,7 @@ export default $config({
 
     return {
       api: api.myApi.url,
+      research: api.researcherAi.url
     };
   },
 });
