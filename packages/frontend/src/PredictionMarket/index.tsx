@@ -47,21 +47,6 @@ export default function PredictionMarket() {
                     </div>
                     <p className="mt-2 text-center">AI A: {progress}% | AI B: {100 - progress}%</p>
                 </div>
-                <div className="flex mb-6">
-                    <input
-                        type="text"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        className="flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter text..."
-                    />
-                    <button
-                        onClick={handleClick}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        Submit
-                    </button>
-                </div>
                 <PlaceBet />
                 <ClaimReward />
                 <WithdrawBet />
