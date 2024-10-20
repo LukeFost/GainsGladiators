@@ -7,9 +7,8 @@
 // Add a modal component for when the button is clicked and the modal should have the background of scroll.gif and have that gif play once and stop at the end. 
 
 import { motion } from "framer-motion";
-import { useState, useCallback, useEffect } from "react";
+import { useState } from "react";
 import { ScrollModal } from "./ScrollModal";
-import { AnimatedButton } from "./AnimatedButton";
 import { PlaceBet } from "./CreateMarket";
 import { ClaimReward } from "./ClaimReward";
 import { WithdrawBet } from "./WithdrawBet";
