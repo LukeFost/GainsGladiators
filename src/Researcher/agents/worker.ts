@@ -47,6 +47,7 @@ export class WorkerAgent {
      * @returns The result of the task.
      */
     private async performTask(task: Task): Promise<string> {
+        console.log(`Worker ${this.id}: Starting task ${task.id}`);
         const prompt = `
         Execute the following task:
         ${task.description}
@@ -61,22 +62,37 @@ export class WorkerAgent {
             { role: 'user', content: prompt },
         ];
 
-        const completion = await this.openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
-            messages: messages,
-            functions: getAvailableTools(),
-            function_call: 'auto',
-        });
+        try {
+            const completion = await this.openai.chat.completions.create({
+                model: 'gpt-3.5-turbo',
+                messages: messages,
+                functions: getAvailableTools(),
+                function_call: 'auto',
+            });
 
-        const responseMessage = completion.choices[0].message;
+            console.log(`Worker ${this.id}: Raw OpenAI response:`, JSON.stringify(completion, null, 2));
 
-        if (responseMessage.content) {
-            return responseMessage.content;
-        } else if (responseMessage.function_call) {
-            // Handle function calls if needed
-            return 'Function call was made, but handling is not implemented yet.';
-        } else {
-            throw new Error('Failed to generate response for the task');
+            if (!completion.choices || completion.choices.length === 0) {
+                throw new Error('No choices returned from OpenAI API');
+            }
+
+            const responseMessage = completion.choices[0].message;
+
+            if (responseMessage.content) {
+                console.log(`Worker ${this.id}: Task ${task.id} completed successfully`);
+                return responseMessage.content;
+            } else if (responseMessage.function_call) {
+                console.log(`Worker ${this.id}: Function call made for task ${task.id}:`, JSON.stringify(responseMessage.function_call, null, 2));
+                return `Function call was made: ${JSON.stringify(responseMessage.function_call)}`;
+            } else {
+                throw new Error('Unexpected response format from OpenAI API');
+            }
+        } catch (error) {
+            console.error(`Worker ${this.id}: Error in performTask for task ${task.id}:`, error);
+            if (error instanceof Error) {
+                console.error(`Worker ${this.id}: Error stack:`, error.stack);
+            }
+            throw new Error(`Failed to execute task: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 }
