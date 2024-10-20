@@ -40,6 +40,10 @@ export function PlaceBet() {
   const updateTotalBets = usePredictionStore(state => state.updateTotalBets)
 
   const handlePlaceBet = async () => {
+    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+      alert("Please enter a valid bet amount")
+      return
+    }
     await placeBet(amount, betOnA)
     if (isConfirmed) {
       updateTotalBets(betOnA, parseFloat(amount))
@@ -47,29 +51,52 @@ export function PlaceBet() {
   }
 
   return (
-    <Card className="w-[350px]">
+    <Card className="w-full mb-4">
       <CardHeader>
-        <CardTitle>Place Bet</CardTitle>
-        <CardDescription>Bet on your preferred AI</CardDescription>
+        <CardTitle>Place Your Bet</CardTitle>
+        <CardDescription>Choose an AI model and place your bet</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid w-full items-center gap-4">
           <div className="flex flex-col space-y-1.5">
-            <Label htmlFor="amount">Bet Amount</Label>
-            <Input id="amount" placeholder="Enter amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
+            <Label htmlFor="amount">Bet Amount (in ETH)</Label>
+            <Input 
+              id="amount" 
+              placeholder="Enter amount" 
+              value={amount} 
+              onChange={(e) => setAmount(e.target.value)}
+              type="number"
+              step="0.01"
+            />
           </div>
           <div className="flex flex-col space-y-1.5">
-            <Label>Choose AI</Label>
-            <div>
-              <Button onClick={() => setBetOnA(true)} variant={betOnA ? "default" : "outline"}>AI A</Button>
-              <Button onClick={() => setBetOnA(false)} variant={!betOnA ? "default" : "outline"}>AI B</Button>
+            <Label>Choose AI Model</Label>
+            <div className="flex justify-between">
+              <Button 
+                onClick={() => setBetOnA(true)} 
+                variant={betOnA ? "default" : "outline"}
+                className="w-[48%]"
+              >
+                AI Model A
+              </Button>
+              <Button 
+                onClick={() => setBetOnA(false)} 
+                variant={!betOnA ? "default" : "outline"}
+                className="w-[48%]"
+              >
+                AI Model B
+              </Button>
             </div>
           </div>
         </div>
       </CardContent>
       <CardFooter className="flex flex-col items-start">
-        <Button onClick={handlePlaceBet} disabled={isPending || isConfirming}>
-          {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : 'Place Bet'}
+        <Button 
+          onClick={handlePlaceBet} 
+          disabled={isPending || isConfirming || !amount}
+          className="w-full"
+        >
+          {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : `Place Bet on ${betOnA ? 'AI Model A' : 'AI Model B'}`}
         </Button>
         {isConfirmed && <p className="mt-2 text-green-600">Bet placed successfully!</p>}
         {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}

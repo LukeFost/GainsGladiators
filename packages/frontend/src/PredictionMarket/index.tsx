@@ -16,25 +16,20 @@ import { WithdrawBet } from "./WithdrawBet";
 import { usePredictionStore } from '../stores/predictionStore';
 
 export default function PredictionMarket() {
-    const [inputValue, setInputValue] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { getOdds } = usePredictionStore();
 
     const { oddsA } = getOdds();
     const progress = Math.round(oddsA * 100);
 
-    const handleClick = useCallback(() => {
-        setIsModalOpen(true);
-    }, []);
-
-    const handleSign = useCallback(() => {
-        console.log("I was signed")
-    }, []);
-
     return (
         <div className="min-h-screen flex flex-col items-center justify-center">
             {/* Main Content */}
             <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
+                <h1 className="text-2xl font-bold mb-4 text-center">AI Prediction Market</h1>
+                <p className="mb-4 text-center">Bet on which AI model will perform better!</p>
+                
+                {/* Odds Display */}
                 <div className="mb-6">
                     <div className="h-4 w-full bg-gray-200 rounded-full">
                         <motion.div
@@ -45,22 +40,18 @@ export default function PredictionMarket() {
                             transition={{ duration: 0.5 }}
                         />
                     </div>
-                    <p className="mt-2 text-center">AI A: {progress}% | AI B: {100 - progress}%</p>
+                    <p className="mt-2 text-center">Current Odds - AI A: {progress}% | AI B: {100 - progress}%</p>
                 </div>
+
+                {/* Betting Components */}
                 <PlaceBet />
                 <ClaimReward />
                 <WithdrawBet />
             </div>
 
-            {/* ScrollModal */}
+            {/* ScrollModal - Kept for future use */}
             <ScrollModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <p className="text-center">Your input: {inputValue}</p>
-                <AnimatedButton 
-                    onClick={handleSign}
-                    className="mt-4 px-4 py-2 bg-gray-200 text-black rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                >
-                    Sign Here
-                </AnimatedButton>
+                <p className="text-center">Modal content goes here</p>
             </ScrollModal>
         </div>
     );
