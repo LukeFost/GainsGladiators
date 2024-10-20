@@ -7,10 +7,6 @@ import OpenAI from "openai";
 const openai = new OpenAI({
   apiKey: Resource.OpenRouterApiKey.value,
   baseURL: "https://openrouter.ai/api/v1",
-  defaultHeaders: {
-    "HTTP-Referer": "https://gainsgladiators.com",
-    "X-Title": "GainsGladiators",
-  }
 });
 
 // Pass the OpenAI instance to QueryOptimizer

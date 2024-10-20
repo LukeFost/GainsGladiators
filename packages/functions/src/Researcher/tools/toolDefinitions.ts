@@ -15,58 +15,6 @@ export const tools = [
         required: ["query"]
       }
     }
-  },
-  {
-    type: "function",
-    function: {
-      name: "search_academic_papers",
-      description: "Search for recent academic papers on a given topic",
-      parameters: {
-        type: "object",
-        properties: {
-          topic: {
-            type: "string",
-            description: "The topic to search for"
-          },
-          yearRange: {
-            type: "string",
-            description: "The year range to search within (e.g., '2020-2023')"
-          },
-          maxResults: {
-            type: "number",
-            description: "The maximum number of results to return"
-          }
-        },
-        required: ["topic"]
-      }
-    }
-  },
-  {
-    type: "function",
-    function: {
-      name: "analyze_findings",
-      description: "Analyze key findings from academic papers",
-      parameters: {
-        type: "object",
-        properties: {
-          papers: {
-            type: "array",
-            items: {
-              type: "string"
-            },
-            description: "An array of paper titles or abstracts to analyze"
-          },
-          focusAreas: {
-            type: "array",
-            items: {
-              type: "string"
-            },
-            description: "Areas to focus on in the analysis (e.g., ['methodology', 'results', 'conclusions'])"
-          }
-        },
-        required: ["papers"]
-      }
-    }
   }
 ];
 
