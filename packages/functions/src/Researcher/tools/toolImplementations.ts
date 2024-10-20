@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { logger } from '../../../utils/logger'; // Assuming you have a logger utility
 
 const EXAAI_API_KEY = process.env.EXAAI_API_KEY;
 const API_URL = 'https://api.exa.ai/search';
