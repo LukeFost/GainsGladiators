@@ -43,7 +43,7 @@ export const AnimatedButton: React.FC<AnimatedButtonProps> = ({ onClick, childre
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <img src="/ring_play.gif" alt="Animating" className="w-full h-full object-contain" />
+          <img src="/stampRing.gif" alt="Animating" className="w-full h-full object-contain" />
         </motion.div>
       )}
       {buttonState === 'final' && (
@@ -52,7 +52,7 @@ export const AnimatedButton: React.FC<AnimatedButtonProps> = ({ onClick, childre
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <img src="/stamp.png" alt="Stamped" className="w-full h-full object-contain" />
+          <img src="/stamped.png" alt="Stamped" className="w-full h-full object-contain" />
         </motion.div>
       )}
     </AnimatePresence>
