@@ -10,12 +10,21 @@ export class QueryOptimizer {
     }
 
     async optimizeQuery(query: string): Promise<Task[]> {
-        const actions = await this.parseQueryIntoActions(query);
-        return actions.map((action, index) => ({
-            id: `task-${index + 1}`,
-            description: action.description,
-            parameters: action.parameters
-        }));
+        console.log('Optimizer: Starting query optimization');
+        try {
+            const actions = await this.parseQueryIntoActions(query);
+            const tasks = actions.map((action, index) => ({
+                id: `task-${index + 1}`,
+                description: action.description,
+                parameters: action.parameters
+            }));
+            console.log('Optimizer: Query optimization successful');
+            console.log('Optimized tasks:', JSON.stringify(tasks, null, 2));
+            return tasks;
+        } catch (error) {
+            console.error('Optimizer: Error during query optimization:', error);
+            throw error;
+        }
     }
 
     private async parseQueryIntoActions(query: string): Promise<Array<{ description: string; parameters: Record<string, any> }>> {
@@ -71,9 +80,11 @@ export class QueryOptimizer {
                 // Try parsing the content directly
                 parsedContent = JSON.parse(content);
             }
+            console.log('Optimizer: Successfully parsed AI response');
+            console.log('Parsed content:', JSON.stringify(parsedContent, null, 2));
             return parsedContent || [];
         } catch (error) {
-            console.error("Error parsing AI response:", error);
+            console.error("Optimizer: Error parsing AI response:", error);
             throw new Error("Failed to parse the AI-generated tasks");
         }
     }

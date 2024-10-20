@@ -23,6 +23,7 @@ export class WorkerAgent {
         try {
             const result = await this.performTask(task);
             console.log(`Worker ${this.id} completed task ${task.id} successfully`);
+            console.log(`Task ${task.id} result:`, result);
             return {
                 id: task.id,
                 workerId: this.id,

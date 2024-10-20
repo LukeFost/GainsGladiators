@@ -16,18 +16,23 @@ export class Router {
     }
 
     async handleQuery(query: string): Promise<TaskResult[]> {
+        console.log('Router: Starting to handle query:', query);
         try {
             const tasks: Task[] = await this.optimizer.optimizeQuery(query);
+            console.log('Router: Tasks optimized:', JSON.stringify(tasks, null, 2));
             const taskPromises = tasks.map(task => this.assignTaskToWorker(task));
             this.taskResults = await Promise.all(taskPromises);
+            console.log('Router: All tasks completed');
+            console.log('Router: Task results:', JSON.stringify(this.taskResults, null, 2));
             return this.taskResults;
         } catch (error) {
-            console.error('Error handling query:', error);
+            console.error('Router: Error handling query:', error);
             throw error;
         }
     }
 
     private async assignTaskToWorker(task: Task): Promise<TaskResult> {
+        console.log(`Router: Attempting to assign task ${task.id}`);
         let attempts = 0;
         const maxAttempts = 5;
         const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
@@ -35,12 +40,15 @@ export class Router {
         while (attempts < maxAttempts) {
             const worker = this.getAvailableWorker();
             if (worker) {
+                console.log(`Router: Assigning task ${task.id} to worker ${worker.id}`);
                 return await worker.executeTask(task);
             }
+            console.log(`Router: No available worker, attempt ${attempts + 1}/${maxAttempts}`);
             await delay(500);
             attempts++;
         }
 
+        console.error(`Router: Failed to assign task ${task.id} after ${maxAttempts} attempts`);
         return {
             id: task.id,
             workerId: 'N/A',
