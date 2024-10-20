@@ -34,18 +34,27 @@ export const ScrollModal: React.FC<ScrollModalProps> = ({ isOpen, onClose, child
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="relative w-full max-w-lg max-h-[500px] overflow-auto"
+        className="relative w-full max-w-xl h-[600px] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="absolute inset-0">
           <img
             src={isAnimationComplete ? "/Scroll_Open.png" : "/scroll_1.gif"}
             alt="Scroll Animation"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
         </div>
-        <div className="relative z-10 p-8">
-          {children}
+        <div className="relative z-10 flex flex-col items-center justify-between h-full py-16 px-8">
+          <h2 className="text-2xl font-bold mb-4">Modal Content</h2>
+          <div className="flex-grow flex flex-col items-center justify-center">
+            {children}
+          </div>
+          <button
+            onClick={onClose}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Close
+          </button>
         </div>
       </motion.div>
     </motion.div>
