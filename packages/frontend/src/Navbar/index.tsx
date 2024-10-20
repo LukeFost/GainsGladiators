@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Menu, Home, ShoppingCart, Eye, User, TrendingUp, Bot, Swords } from 'lucide-react'
+import { Menu, Home, ShoppingCart, Eye, User } from 'lucide-react'
 import { Link } from '@tanstack/react-router' // Use TanStack's Link for routing compatibility
 
 import { Button } from '@/components/ui/button'
@@ -17,6 +17,7 @@ const NavLinks = () => (
       <ShoppingCart className="h-4 w-4" />
       <span>Market</span>
     </Link>
+<<<<<<< HEAD
     <Link to="/aiAgentCreation" className="flex items-center space-x 
     text-sm font-medium transition-colors hover:text-primary">
       <Bot className="h-4 w-4" />
@@ -28,6 +29,16 @@ const NavLinks = () => (
       <span>Prediction</span>
     </Link>
     <LogoutButton />
+=======
+    <Link to="/view" className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary">
+      <Eye className="h-4 w-4" />
+      <span>View</span>
+    </Link>
+    <Link to="/profile" className="flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary">
+      <User className="h-4 w-4" />
+      <span>Profile</span>
+    </Link>
+>>>>>>> parent of 640ed4a (Merge pull request #1 from LukeFost/frontend-v69)
   </>
 )
 

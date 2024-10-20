@@ -5,13 +5,19 @@ import "sst"
 export {}
 declare module "sst" {
   export interface Resource {
+    "DeployAi": {
+      "name": string
+      "type": "sst.aws.Function"
+      "url": string
+    }
     "Frontend": {
       "type": "sst.aws.StaticSite"
       "url": string
     }
-    "OpenRouterApiKey": {
-      "type": "sst.sst.Secret"
-      "value": any
+    "Researcher": {
+      "name": string
+      "type": "sst.aws.Function"
+      "url": string
     }
   }
 }
