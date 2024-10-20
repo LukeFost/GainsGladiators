@@ -58,7 +58,19 @@ export class QueryOptimizer {
         }
 
         try {
-            const parsedContent = JSON.parse(content);
+            let parsedContent;
+            if (content.includes('```json')) {
+                // Extract JSON from markdown code block
+                const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+                if (jsonMatch && jsonMatch[1]) {
+                    parsedContent = JSON.parse(jsonMatch[1]);
+                } else {
+                    throw new Error("Failed to extract JSON from markdown");
+                }
+            } else {
+                // Try parsing the content directly
+                parsedContent = JSON.parse(content);
+            }
             return parsedContent || [];
         } catch (error) {
             console.error("Error parsing AI response:", error);
