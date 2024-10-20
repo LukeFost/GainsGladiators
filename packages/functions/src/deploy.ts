@@ -29,20 +29,39 @@ export async function handler(event: any) {
 
     log('Setting secret as environment variable');
     process.env.SECRET_KEY = secret;
+    const fs = require('fs')
 
-    // Check if scripts exist
-    const publishScriptPath = join(process.cwd(), 'scripts', 'publish.js');
-    const setSecretsScriptPath = join(process.cwd(), 'scripts', 'setSecrets.js');
+    // Check if scripts exist                                                                                                          
+    const publishScriptPath = join(process.cwd(), 'packages', 'functions', 'src', 'Deploy', 'scripts', 'publish.ts');         
+    const setSecretsScriptPath = join(process.cwd(), 'packages', 'functions', 'src', 'Deploy', 'scripts', 'setSecrets.ts');
+                                                                                             
+    log(`Contents of current directory: ${fs.readdirSync(process.cwd()).join(', ')}`);                                        
+    log(`Contents of packages: ${fs.readdirSync(join(process.cwd(), 'packages')).join(', ')}`);                               
+    log(`Contents of packages/functions: ${fs.readdirSync(join(process.cwd(), 'packages', 'functions')).join(', ')}`);        
+    log(`Contents of packages/functions/src: ${fs.readdirSync(join(process.cwd(), 'packages', 'functions', 'src')).join(',')}`);                                                                                                                    
+    log(`Contents of packages/functions/src/Deploy: ${fs.readdirSync(join(process.cwd(), 'packages', 'functions', 'src','Deploy')).join(', ')}`);                                                                                                 
+    log(`Contents of packages/functions/src/Deploy/scripts: ${fs.readdirSync(join(process.cwd(), 'packages', 'functions','src', 'Deploy', 'scripts')).join(', ')}`);  
+
+    log(`__dirname: ${__dirname}`);                                                                                           
+    log(`Publish script path: ${publishScriptPath}`);                                                                         
+    log(`SetSecrets script path: ${setSecretsScriptPath}`); 
+    log(`Contents of current directory: ${fs.readdirSync(process.cwd()).join(', ')}`);                                        
+    //log(`Contents of Deploy/scripts: ${fs.readdirSync(join(process.cwd(), 'Deploy', 'scripts')).join(', ')}`); 
+                                                                                                                              
+    log(`Checking if publish script exists: ${existsSync(publishScriptPath)}`);                                               
+    log(`Checking if setSecrets script exists: ${existsSync(setSecretsScriptPath)}`);   
     
     log(`Checking if publish script exists: ${existsSync(publishScriptPath)}`);
     log(`Checking if setSecrets script exists: ${existsSync(setSecretsScriptPath)}`);
 
+    const nodePath = process.execPath;
+
     log('Attempting to spawn publish process');
-    const publish = spawn('node', [publishScriptPath], { env: process.env, shell: true });
+    const publish = spawn(nodePath, ['-r', 'ts-node/register', publishScriptPath], { env: process.env, shell: true });  
     log('Publish process spawned successfully');
     
     log('Attempting to spawn setSecrets process');
-    const setSecrets = spawn('node', [setSecretsScriptPath], { env: process.env, shell: true });
+    const setSecrets = spawn(nodePath, ['-r', 'ts-node/register', setSecretsScriptPath], { env: process.env, shell: true }); 
     log('SetSecrets process spawned successfully');
 
     let publishOutput = '';
