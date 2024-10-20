@@ -1,9 +1,9 @@
-import { spawn } from 'child_process'
+import { spawn } from 'child_process';
 import { writeFileSync, existsSync, mkdirSync, appendFileSync } from 'fs';
-import * as dotenv from 'dotenv'
+import dotenv from 'dotenv';
 import { Resource } from 'sst';
 
-dotenv.config()
+dotenv.config();
 
 function log(message: string) {
   const timestamp = new Date().toISOString();
@@ -96,8 +96,8 @@ export async function publish(): Promise<{ cid: string, log: string[] }> {
 }
 
 // If this script is run directly (not imported as a module)
-if (require.main === module) {
-  publish().then((cid) => {
+if (import.meta.url === `file://${process.argv[1]}`) {
+  publish().then(({ cid }) => {
     console.log(`Published successfully. CID: ${cid}`);
   }).catch((error) => {
     console.error('Publication failed:', error);
