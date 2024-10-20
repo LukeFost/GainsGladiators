@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { predictABI, predictAddress } from '../abi/predictionABI'
 import { Button } from "@/components/ui/button"
 import { usePredictionStore } from '../stores/predictionStore'
+import { motion, AnimatePresence } from 'framer-motion'
 
 function useWithdrawBet() {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
@@ -31,8 +32,20 @@ function useWithdrawBet() {
 
 export function WithdrawBet() {
   const [betOnA, setBetOnA] = useState(true)
+  const [showAnimation, setShowAnimation] = useState(false)
   const { withdrawBet, isPending, isConfirming, isConfirmed, error } = useWithdrawBet()
   const updateTotalBets = usePredictionStore(state => state.updateTotalBets)
+
+  useEffect(() => {
+    if (isPending || isConfirming) {
+      setShowAnimation(true)
+    } else {
+      const timer = setTimeout(() => {
+        setShowAnimation(false)
+      }, 2000) // Adjust this value to match the duration of your GIF
+      return () => clearTimeout(timer)
+    }
+  }, [isPending, isConfirming])
 
   const handleWithdrawBet = async () => {
     await withdrawBet(betOnA)
@@ -52,6 +65,19 @@ export function WithdrawBet() {
       <Button onClick={handleWithdrawBet} disabled={isPending || isConfirming} className="w-full">
         {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : 'Withdraw Bet'}
       </Button>
+      <AnimatePresence>
+        {showAnimation && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="flex justify-center mt-4"
+          >
+            <img src="/thumbdownnormal.gif" alt="Withdraw Animation" className="w-16 h-16" />
+          </motion.div>
+        )}
+      </AnimatePresence>
       {isConfirmed && <p className="mt-2 text-green-600">Bet withdrawn successfully!</p>}
       {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}
     </div>
