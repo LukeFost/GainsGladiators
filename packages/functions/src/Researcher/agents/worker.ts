@@ -1,6 +1,7 @@
 import { Task, TaskResult } from '../shared/taskTypes';
 import { exaSearch } from '../tools/searcher';
 import { getTrendingPools } from '../tools/coingecko';
+import { getTrendingPoolsForNetwork } from '../tools/flowgecko';
 import { processQueryWithLLM } from '../shared/llm';
 import { analysisPrompt } from '../prompts/analysisPrompt';
 
@@ -47,7 +48,11 @@ export class WorkerAgent {
     const trendingPools = await getTrendingPools();
     const trendingPoolsQuery = trendingPools.join(', ');
 
-    const enhancedQuery = `${formattedQuery} focusing on these trending tokens: ${trendingPoolsQuery}`;
+    console.log(`WorkerAgent: ${this.id} fetching trending pools for Ethereum network for task ${task.id}`);
+    const trendingPoolsEthereum = await getTrendingPoolsForNetwork('eth');
+    const trendingPoolsEthereumQuery = trendingPoolsEthereum.join(', ');
+
+    const enhancedQuery = `${formattedQuery} focusing on these trending tokens across all networks: ${trendingPoolsQuery}, and these trending tokens on Ethereum: ${trendingPoolsEthereumQuery}`;
     console.log(`WorkerAgent: ${this.id} executing exaSearch with enhanced query for task ${task.id}`);
     const searchResult = await exaSearch(enhancedQuery, task.parameters);
     
@@ -63,7 +68,8 @@ export class WorkerAgent {
       originalQuery: queryJson.originalQuery,
       formattedQuery: formattedQuery,
       enhancedQuery: enhancedQuery,
-      trendingPools: trendingPools,
+      trendingPoolsAllNetworks: trendingPools,
+      trendingPoolsEthereum: trendingPoolsEthereum,
       keywords: queryJson.keywords,
       context: queryJson.context,
       searchResults: JSON.parse(searchResult),
