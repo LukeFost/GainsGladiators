@@ -4,7 +4,7 @@ import { getTrendingPools } from '../tools/coingecko';
 import { getTrendingPoolsForNetwork } from '../tools/flowgecko';
 import { processQueryWithLLM } from '../shared/llm';
 import { analysisPrompt } from '../prompts/analysisPrompt';
-import { getProtocolData, getProtocolFees } from '../tools/defiLlama';
+import { getProtocolData, getProtocolFees, findProtocol } from '../tools/defiLlama';
 
 export class WorkerAgent {
   id: string;
