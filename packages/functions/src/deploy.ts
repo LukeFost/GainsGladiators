@@ -1,5 +1,4 @@
-import { writeFileSync, appendFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { appendFileSync } from 'fs';
 import { publish } from './Deploy/scripts/publish';
 import { setSecrets } from './Deploy/scripts/setSecrets';
 
