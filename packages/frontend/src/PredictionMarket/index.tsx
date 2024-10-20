@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ScrollModal } from "./ScrollModal";
 import { PlaceBet } from "./CreateMarket";
 import { ClaimReward } from "./ClaimReward";
@@ -18,15 +18,11 @@ export default function PredictionMarket() {
         functionName: 'getOdds',
     });
 
-    useEffect(() => {
-        if (contractOdds) {
-            const [oddsA, oddsB] = contractOdds;
-            getOdds(Number(oddsA), Number(oddsB));
-        }
-    }, [contractOdds,]);
-
     const { oddsA, oddsB } = getOdds();
-    const progress = oddsA ? Math.round((oddsA / (oddsA + oddsB)) * 100) : 50;
+    
+    // Calculate the progress based on the contract odds
+    const totalOdds = contractOdds ? Number(contractOdds[0]) + Number(contractOdds[1]) : 0;
+    const progress = totalOdds > 0 ? Math.round((Number(contractOdds[0]) / totalOdds) * 100) : 50;
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center">
@@ -68,7 +64,7 @@ export default function PredictionMarket() {
                     <p className="mt-2 text-center text-black">
                         {isLoading ? "" : 
                          isError ? "" : 
-                         `Raw Odds - AI A: ${oddsA} | AI B: ${oddsB}`}
+                         `Raw Odds - AI A: ${contractOdds ? contractOdds[0] : 'N/A'} | AI B: ${contractOdds ? contractOdds[1] : 'N/A'}`}
                     </p>
                 </div>
 
