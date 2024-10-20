@@ -1,5 +1,6 @@
 import { Task, TaskResult } from '../shared/taskTypes';
 import { exaSearch } from '../tools/searcher';
+import { getTrendingPools } from '../tools/coingecko';
 import { processQueryWithLLM } from '../shared/llm';
 import { analysisPrompt } from '../prompts/analysisPrompt';
 
@@ -41,21 +42,28 @@ export class WorkerAgent {
     console.log(`WorkerAgent: ${this.id} performing task ${task.id}`);
     const queryJson = JSON.parse(task.description);
     const formattedQuery = queryJson.formattedQuery || queryJson.originalQuery;
-    console.log(`WorkerAgent: ${this.id} executing exaSearch for task ${task.id}`);
-    const searchResult = await exaSearch(formattedQuery, task.parameters);
+
+    console.log(`WorkerAgent: ${this.id} fetching trending pools for task ${task.id}`);
+    const trendingPools = await getTrendingPools();
+    const trendingPoolsQuery = trendingPools.join(', ');
+
+    const enhancedQuery = `${formattedQuery} focusing on these trending tokens: ${trendingPoolsQuery}`;
+    console.log(`WorkerAgent: ${this.id} executing exaSearch with enhanced query for task ${task.id}`);
+    const searchResult = await exaSearch(enhancedQuery, task.parameters);
     
     console.log(`WorkerAgent: ${this.id} generating analysis for task ${task.id}`);
-    // Generate an analysis based on the search results and the formatted query
     const analysis = await processQueryWithLLM(
-      formattedQuery,
+      enhancedQuery,
       analysisPrompt.model,
       analysisPrompt.system,
-      analysisPrompt.user(queryJson.originalQuery, formattedQuery, searchResult)
+      analysisPrompt.user(queryJson.originalQuery, enhancedQuery, searchResult)
     );
     
     const response = {
       originalQuery: queryJson.originalQuery,
       formattedQuery: formattedQuery,
+      enhancedQuery: enhancedQuery,
+      trendingPools: trendingPools,
       keywords: queryJson.keywords,
       context: queryJson.context,
       searchResults: JSON.parse(searchResult),
