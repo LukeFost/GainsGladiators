@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
-import { writeFileSync, appendFileSync } from 'fs';
+import { writeFileSync, appendFileSync, existsSync } from 'fs';
+import { join } from 'path';
 
 function log(message: string) {
   const logMessage = `[${new Date().toISOString()}] ${message}`;
@@ -10,6 +11,11 @@ function log(message: string) {
 export async function handler(event: any) {
   log('Deployment process started');
   try {
+    // Log environment information
+    log(`Current working directory: ${process.cwd()}`);
+    log(`Node version: ${process.version}`);
+    log(`PATH: ${process.env.PATH}`);
+
     const body = JSON.parse(event.body || '{}');
     const { secret, ...params } = body;
 
@@ -24,12 +30,19 @@ export async function handler(event: any) {
     log('Setting secret as environment variable');
     process.env.SECRET_KEY = secret;
 
+    // Check if scripts exist
+    const publishScriptPath = join(process.cwd(), 'scripts', 'publish.js');
+    const setSecretsScriptPath = join(process.cwd(), 'scripts', 'setSecrets.js');
+    
+    log(`Checking if publish script exists: ${existsSync(publishScriptPath)}`);
+    log(`Checking if setSecrets script exists: ${existsSync(setSecretsScriptPath)}`);
+
     log('Attempting to spawn publish process');
-    const publish = spawn('node', ['scripts/publish.js'], { env: process.env });
+    const publish = spawn('node', [publishScriptPath], { env: process.env, shell: true });
     log('Publish process spawned successfully');
     
     log('Attempting to spawn setSecrets process');
-    const setSecrets = spawn('node', ['scripts/setSecrets.js'], { env: process.env });
+    const setSecrets = spawn('node', [setSecretsScriptPath], { env: process.env, shell: true });
     log('SetSecrets process spawned successfully');
 
     let publishOutput = '';
