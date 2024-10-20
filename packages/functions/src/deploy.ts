@@ -1,46 +1,51 @@
-import * as fs from 'fs';
+import { promises as fs } from 'fs';
+import path from 'path';
 import { publish } from './Deploy/scripts/publish';
 import { setSecrets } from './Deploy/scripts/setSecrets';
 
-function log(message: string) {
+async function log(message: string) {
   const logMessage = `[${new Date().toISOString()}] ${message}`;
   console.log(logMessage);
-  fs.appendFileSync('./deploy.log', `${logMessage}\n`);
+  await fs.appendFile(path.join(process.cwd(), 'deploy.log'), `${logMessage}\n`);
 }
 
 export async function handler(event: any) {
-  log('Deployment process started');
+  await log('Deployment process started');
   try {
     // Log environment information
-    log(`Current working directory: ${process.cwd()}`);
-    log(`Node version: ${process.version}`);
-    log(`PATH: ${process.env.PATH}`);
+    await log(`Current working directory: ${process.cwd()}`);
+    await log(`Node version: ${process.version}`);
+    await log(`PATH: ${process.env.PATH}`);
 
     const body = JSON.parse(event.body || '{}');
     const { secret, ...params } = body;
 
     if (!secret) {
-      log('Error: Secret is missing in the request body');
+      await log('Error: Secret is missing in the request body');
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Secret is required' }),
       };
     }
 
-    log('Setting secret as environment variable');
+    await log('Setting secret as environment variable');
     process.env.SECRET_KEY = secret;
 
-    log('Starting publish process');
+    await log('Starting publish process');
     const publishResult = await publish();
-    log(`Publish completed. CID: ${publishResult.cid}`);
-    publishResult.log.forEach(logEntry => log(logEntry));
+    await log(`Publish completed. CID: ${publishResult.cid}`);
+    for (const logEntry of publishResult.log) {
+      await log(logEntry);
+    }
 
-    log('Starting setSecrets process');
+    await log('Starting setSecrets process');
     const secretsResult = await setSecrets();
-    log(`SetSecrets completed. Agent URL: ${secretsResult.url}`);
-    secretsResult.log.forEach(logEntry => log(logEntry));
+    await log(`SetSecrets completed. Agent URL: ${secretsResult.url}`);
+    for (const logEntry of secretsResult.log) {
+      await log(logEntry);
+    }
 
-    log('Deployment process completed successfully');
+    await log('Deployment process completed successfully');
     return {
       statusCode: 200,
       body: JSON.stringify({ 
@@ -51,7 +56,7 @@ export async function handler(event: any) {
       }),
     };
   } catch (error) {
-    log(`Error: ${error.message}`);
+    await log(`Error: ${error.message}`);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'Internal server error', details: error.message }),
