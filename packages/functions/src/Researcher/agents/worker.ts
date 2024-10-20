@@ -18,9 +18,11 @@ export class WorkerAgent {
      * @returns The result of the task execution.
      */
     async executeTask(task: Task): Promise<TaskResult> {
+        console.log(`Worker ${this.id} starting task ${task.id}`);
         this.isBusy = true;
         try {
             const result = await this.performTask(task);
+            console.log(`Worker ${this.id} completed task ${task.id} successfully`);
             return {
                 id: task.id,
                 workerId: this.id,
@@ -28,6 +30,7 @@ export class WorkerAgent {
                 result: result
             };
         } catch (error) {
+            console.error(`Worker ${this.id} failed to execute task ${task.id}:`, error);
             return {
                 id: task.id,
                 workerId: this.id,
@@ -36,6 +39,7 @@ export class WorkerAgent {
             };
         } finally {
             this.isBusy = false;
+            console.log(`Worker ${this.id} is now available`);
         }
     }
 
