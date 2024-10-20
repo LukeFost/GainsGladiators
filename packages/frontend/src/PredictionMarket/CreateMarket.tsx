@@ -44,13 +44,39 @@ function usePlaceBet() {
   return { placeBet, isPending, isConfirming, isConfirmed, error }
 }
 
+function useApproveTokens() {
+  const { writeContract, data: hash, isPending, error } = useWriteContract()
+
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({
+      hash,
+    })
+
+  const approveTokens = async (amount: string) => {
+    try {
+      const result = await writeContract({
+        address: erc20Address,
+        abi: mockerc20ABI,
+        functionName: 'approve',
+        args: [predictAddress, parseEther(amount)],
+      })
+      console.log('Approval transaction submitted:', result)
+    } catch (err) {
+      console.error('Failed to approve tokens:', err)
+      alert('Failed to approve tokens. Please try again.')
+    }
+  }
+
+  return { approveTokens, isPending, isConfirming, isConfirmed, error }
+}
+
 export function PlaceBet() {
   const [amount, setAmount] = useState('')
   const [betOnA, setBetOnA] = useState(true)
   const [tokenApproval, setTokenApproval] = useState('0')
-  const { placeBet, isPending, isConfirming, isConfirmed, error } = usePlaceBet()
+  const { placeBet, isPending: isBetPending, isConfirming: isBetConfirming, isConfirmed: isBetConfirmed, error: betError } = usePlaceBet()
+  const { approveTokens, isPending: isApprovePending, isConfirming: isApproveConfirming, isConfirmed: isApproveConfirmed, error: approveError } = useApproveTokens()
   const updateTotalBets = usePredictionStore(state => state.updateTotalBets)
-  const { writeContract } = useWriteContract()
   const { address: userAddress } = useAccount()
 
   const { data: balance } = useBalance({
@@ -71,6 +97,15 @@ export function PlaceBet() {
     }
   }, [currentApproval])
 
+  const handleApproveTokens = async () => {
+    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+      alert("Please enter a valid amount")
+      return
+    }
+
+    await approveTokens(amount)
+  }
+
   const handlePlaceBet = async () => {
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
       alert("Please enter a valid bet amount")
@@ -82,23 +117,19 @@ export function PlaceBet() {
       return
     }
 
-    try {
-      if (parseEther(amount) > currentApproval) {
-        await writeContract({
-          address: erc20Address,
-          abi: mockerc20ABI,
-          functionName: 'approve',
-          args: [predictAddress, parseEther(amount)],
-        })
-      }
+    if (parseEther(amount) > currentApproval) {
+      alert("Please approve tokens before placing the bet")
+      return
+    }
 
+    try {
       await placeBet(amount, betOnA)
-      if (isConfirmed) {
+      if (isBetConfirmed) {
         updateTotalBets(betOnA, parseFloat(amount))
       }
     } catch (err) {
       console.error('Error in handlePlaceBet:', err)
-      alert('Failed to approve tokens or place bet. Please try again.')
+      alert('Failed to place bet. Please try again.')
     }
   }
 
@@ -140,14 +171,23 @@ export function PlaceBet() {
         </div>
       </div>
       <Button 
+        onClick={handleApproveTokens} 
+        disabled={isApprovePending || isApproveConfirming || !amount}
+        className="w-full mb-2"
+      >
+        {isApprovePending ? 'Approving...' : isApproveConfirming ? 'Confirming...' : 'Approve Tokens'}
+      </Button>
+      <Button 
         onClick={handlePlaceBet} 
-        disabled={isPending || isConfirming || !amount}
+        disabled={isBetPending || isBetConfirming || !amount || parseEther(amount) > currentApproval}
         className="w-full"
       >
-        {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : `Place Bet on ${betOnA ? 'AI Model A' : 'AI Model B'}`}
+        {isBetPending ? 'Submitting...' : isBetConfirming ? 'Confirming...' : `Place Bet on ${betOnA ? 'AI Model A' : 'AI Model B'}`}
       </Button>
-      {isConfirmed && <p className="mt-2 text-green-600">Bet placed successfully!</p>}
-      {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}
+      {isApproveConfirmed && <p className="mt-2 text-green-600">Tokens approved successfully!</p>}
+      {isBetConfirmed && <p className="mt-2 text-green-600">Bet placed successfully!</p>}
+      {approveError && <p className="mt-2 text-red-600">Approval Error: {approveError.message}</p>}
+      {betError && <p className="mt-2 text-red-600">Bet Error: {betError.message}</p>}
     </div>
   )
 }
