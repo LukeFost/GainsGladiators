@@ -1,6 +1,7 @@
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { predictABI, predictAddress } from '../abi/predictionABI'
 import { Button } from "@/components/ui/button"
+import { AnimatedButton } from './AnimatedButton'
 
 function useClaimReward() {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
@@ -33,10 +34,15 @@ export function ClaimReward() {
     <div className="w-full space-y-4">
       <h2 className="text-2xl font-bold mb-4 text-black">Claim Reward</h2>
       <p className="text-black">Click the button below to claim your reward if you've won.</p>
-      <Button onClick={claimReward} disabled={isPending || isConfirming} className="w-full">
-        {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : 'Claim Reward'}
-      </Button>
-      {isConfirmed && <p className="mt-2 text-green-600">Reward claimed successfully!</p>}
+      {isConfirmed ? (
+        <AnimatedButton onClick={() => {}} className="w-full">
+          Reward Claimed Successfully!
+        </AnimatedButton>
+      ) : (
+        <Button onClick={claimReward} disabled={isPending || isConfirming} className="w-full">
+          {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : 'Claim Reward'}
+        </Button>
+      )}
       {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}
     </div>
   )

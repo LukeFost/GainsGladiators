@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { usePredictionStore } from '../stores/predictionStore'
 import { erc20Address, mockerc20ABI } from '../abi/mockerc20ABI'
+import { AnimatedButton } from './AnimatedButton'
 
 function usePlaceBet() {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
@@ -139,14 +140,19 @@ export function PlaceBet() {
           <p>Current Approval: {tokenApproval} tokens</p>
         </div>
       </div>
-      <Button 
-        onClick={handlePlaceBet} 
-        disabled={isPending || isConfirming || !amount}
-        className="w-full"
-      >
-        {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : `Place Bet on ${betOnA ? 'AI Model A' : 'AI Model B'}`}
-      </Button>
-      {isConfirmed && <p className="mt-2 text-green-600">Bet placed successfully!</p>}
+      {isConfirmed ? (
+        <AnimatedButton onClick={() => {}} className="w-full">
+          Bet Placed Successfully!
+        </AnimatedButton>
+      ) : (
+        <Button 
+          onClick={handlePlaceBet} 
+          disabled={isPending || isConfirming || !amount}
+          className="w-full"
+        >
+          {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : `Place Bet on ${betOnA ? 'AI Model A' : 'AI Model B'}`}
+        </Button>
+      )}
       {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}
     </div>
   )

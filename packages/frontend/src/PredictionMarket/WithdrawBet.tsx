@@ -3,6 +3,7 @@ import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { predictABI, predictAddress } from '../abi/predictionABI'
 import { Button } from "@/components/ui/button"
 import { usePredictionStore } from '../stores/predictionStore'
+import { AnimatedButton } from './AnimatedButton'
 
 function useWithdrawBet() {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
@@ -49,10 +50,15 @@ export function WithdrawBet() {
         <Button onClick={() => setBetOnA(true)} variant={betOnA ? "default" : "outline"}>AI A</Button>
         <Button onClick={() => setBetOnA(false)} variant={!betOnA ? "default" : "outline"}>AI B</Button>
       </div>
-      <Button onClick={handleWithdrawBet} disabled={isPending || isConfirming} className="w-full">
-        {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : 'Withdraw Bet'}
-      </Button>
-      {isConfirmed && <p className="mt-2 text-green-600">Bet withdrawn successfully!</p>}
+      {isConfirmed ? (
+        <AnimatedButton onClick={() => {}} className="w-full">
+          Bet Withdrawn Successfully!
+        </AnimatedButton>
+      ) : (
+        <Button onClick={handleWithdrawBet} disabled={isPending || isConfirming} className="w-full">
+          {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : 'Withdraw Bet'}
+        </Button>
+      )}
       {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}
     </div>
   )
