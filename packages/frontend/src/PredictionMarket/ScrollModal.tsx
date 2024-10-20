@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 
 interface ScrollModalProps {
@@ -44,18 +44,27 @@ export const ScrollModal: React.FC<ScrollModalProps> = ({ isOpen, onClose, child
             className="w-full h-full object-contain"
           />
         </div>
-        <div className="relative z-10 flex flex-col items-center justify-between h-full py-16 px-8">
-          <h2 className="text-2xl font-bold mb-4">Modal Content</h2>
-          <div className="flex-grow flex flex-col items-center justify-center">
-            {children}
-          </div>
-          <button
-            onClick={onClose}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Close
-          </button>
-        </div>
+        <AnimatePresence>
+          {isAnimationComplete && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="relative z-10 flex flex-col items-center justify-between h-full py-16 px-8"
+            >
+              <h2 className="text-2xl font-bold mb-4 text-[--muted]">Modal Content</h2>
+              <div className="flex-grow flex flex-col items-center justify-center text-[--muted]">
+                {children}
+              </div>
+              <button
+                onClick={onClose}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Close
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </motion.div>
   );
