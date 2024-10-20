@@ -36,17 +36,9 @@ export default function PredictionMarket() {
     }, []);
 
     return (
-        <div className="relative min-h-screen flex flex-col items-center justify-center">
-            {/* Background Pillars */}
-            <div className="absolute inset-y-0 left-0 w-24 h-screen">
-                <img src="/pillar.png" alt="Left Pillar" className="w-full h-full object-cover" />
-            </div>
-            <div className="absolute inset-y-0 right-0 w-24 h-screen">
-                <img src="/pillar.png" alt="Right Pillar" className="w-full h-full object-cover" />
-            </div>
-
+        <div className="min-h-screen flex flex-col items-center justify-center">
             {/* Main Content */}
-            <div className="z-10 w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
+            <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
                 <div className="mb-6">
                     <div className="h-4 w-full bg-gray-200 rounded-full">
                         <motion.div
