@@ -1,8 +1,9 @@
-import { writeFileSync, existsSync, mkdirSync, appendFileSync, readFileSync } from 'fs';
+import { writeFileSync, existsSync, mkdirSync, appendFileSync, readFileSync, readdirSync } from 'fs';
 import { upload } from "thirdweb/storage";
 import dotenv from 'dotenv';
 import { Resource } from 'sst';
 import path from 'path';
+import * as fs from 'fs';
 
 dotenv.config();
 
@@ -80,7 +81,7 @@ export async function publish(): Promise<{ cid: string, log: string[] }> {
       }
     }
 
-    logAndStore(`Current directory contents: ${fs.readdirSync(process.cwd()).join(', ')}`);
+    logAndStore(`Current directory contents: ${readdirSync(process.cwd()).join(', ')}`);
 
     if (!fileContent || !usedPath) {
       logAndStore('All possible paths checked, file not found.');
