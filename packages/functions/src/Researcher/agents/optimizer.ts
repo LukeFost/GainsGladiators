@@ -1,5 +1,6 @@
 import { Task } from '../shared/taskTypes';
 import OpenAI from 'openai';
+import { getAvailableTools } from '../tools/toolDefinitions';
 
 export class QueryOptimizer {
     private openai: OpenAI;
@@ -8,11 +9,6 @@ export class QueryOptimizer {
         this.openai = openai;
     }
 
-    /**
-     * Transforms a user query into a series of actionable tasks.
-     * @param query - The input query string.
-     * @returns An array of Task objects.
-     */
     async optimizeQuery(query: string): Promise<Task[]> {
         const actions = await this.parseQueryIntoActions(query);
         return actions.map((action, index) => ({
@@ -22,11 +18,6 @@ export class QueryOptimizer {
         }));
     }
 
-    /**
-     * Parses the query into discrete actions using AI.
-     * @param query - The input query string.
-     * @returns An array of action objects.
-     */
     private async parseQueryIntoActions(query: string): Promise<Array<{ description: string; parameters: Record<string, any> }>> {
         const prompt = `
         Given the following research query, break it down into a series of actionable tasks. 
@@ -57,7 +48,8 @@ export class QueryOptimizer {
         const completion = await this.openai.chat.completions.create({
             model: "openai/gpt-3.5-turbo",
             messages: [{ role: "user", content: prompt }],
-            response_format: { type: "json_object" }
+            tools: getAvailableTools(),
+            tool_choice: "auto"
         });
 
         const content = completion.choices[0].message.content;
@@ -67,7 +59,7 @@ export class QueryOptimizer {
 
         try {
             const parsedContent = JSON.parse(content);
-            return parsedContent.tasks || [];
+            return parsedContent || [];
         } catch (error) {
             console.error("Error parsing AI response:", error);
             throw new Error("Failed to parse the AI-generated tasks");
