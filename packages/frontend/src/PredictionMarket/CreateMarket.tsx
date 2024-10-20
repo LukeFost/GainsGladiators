@@ -1,7 +1,13 @@
+import { useState } from 'react'
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { predictABI, predictAddress } from '../abi/predictionABI'
+import { parseEther } from 'viem'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 
-function useCreateMarket() {
+function useAddLiquidity() {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
@@ -9,45 +15,57 @@ function useCreateMarket() {
       hash,
     })
 
-  const createMarket = async (betToken: string, feeRecipient: string) => {
+  const addLiquidity = async (key: any, amountEach: string) => {
     try {
       const result = await writeContract({
         address: predictAddress,
         abi: predictABI,
-        functionName: 'createMarket',
-        args: [betToken, feeRecipient],
+        functionName: 'customAddLiquidity',
+        args: [key, parseEther(amountEach)],
       })
       console.log('Transaction submitted:', result)
     } catch (err) {
-      console.error('Failed to create market:', err)
+      console.error('Failed to add liquidity:', err)
     }
   }
 
-  return { createMarket, isPending, isConfirming, isConfirmed, error }
+  return { addLiquidity, isPending, isConfirming, isConfirmed, error }
 }
 
 export function CreateMarket() {
-  const { createMarket, isPending, isConfirming, isConfirmed, error } = useCreateMarket()
+  const [key, setKey] = useState('')
+  const [amountEach, setAmountEach] = useState('')
+  const { addLiquidity, isPending, isConfirming, isConfirmed, error } = useAddLiquidity()
 
-  const handleCreateMarket = async () => {
-    const betToken = '0x...' // Address of the ERC20 token to be used for betting
-    const feeRecipient = '0x...' // Address to receive the fees
-    await createMarket(betToken, feeRecipient)
+  const handleAddLiquidity = async () => {
+    await addLiquidity(key, amountEach)
   }
 
   return (
-    <div className="mt-6">
-      <button
-        onClick={handleCreateMarket}
-        disabled={isPending || isConfirming}
-        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-400"
-      >
-        Create Market
-      </button>
-      {isPending && <p className="mt-2 text-blue-600">Submitting transaction...</p>}
-      {isConfirming && <p className="mt-2 text-yellow-600">Waiting for confirmation...</p>}
-      {isConfirmed && <p className="mt-2 text-green-600">Market created successfully!</p>}
-      {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}
-    </div>
+    <Card className="w-[350px]">
+      <CardHeader>
+        <CardTitle>Add Liquidity</CardTitle>
+        <CardDescription>Provide liquidity to the prediction market</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid w-full items-center gap-4">
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="key">Pool Key</Label>
+            <Input id="key" placeholder="Enter pool key" value={key} onChange={(e) => setKey(e.target.value)} />
+          </div>
+          <div className="flex flex-col space-y-1.5">
+            <Label htmlFor="amount">Amount Each</Label>
+            <Input id="amount" placeholder="Enter amount" value={amountEach} onChange={(e) => setAmountEach(e.target.value)} />
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="flex flex-col items-start">
+        <Button onClick={handleAddLiquidity} disabled={isPending || isConfirming}>
+          {isPending ? 'Submitting...' : isConfirming ? 'Confirming...' : 'Add Liquidity'}
+        </Button>
+        {isConfirmed && <p className="mt-2 text-green-600">Liquidity added successfully!</p>}
+        {error && <p className="mt-2 text-red-600">Error: {error.message}</p>}
+      </CardFooter>
+    </Card>
   )
 }

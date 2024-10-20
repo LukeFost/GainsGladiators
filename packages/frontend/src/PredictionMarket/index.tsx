@@ -59,7 +59,7 @@ export default function PredictionMarket() {
                     </div>
                     <p className="mt-2 text-center">{progress}%</p>
                 </div>
-                <div className="flex">
+                <div className="flex mb-6">
                     <input
                         type="text"
                         value={inputValue}
