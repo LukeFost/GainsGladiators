@@ -20,8 +20,16 @@
     background-position: center;                                                                      
     background-repeat: no-repeat;                                                                     
     background-attachment: fixed;                                                                     
-    transition: background-position 0.1s ease-out;                                                    
-  }                                                                                                   
+    transition: background-position 0.1s ease-out, opacity 0.5s ease-in;                                                    
+    opacity: 0;
+    animation: fadeIn 0.5s ease-in forwards;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }                                                                                                 
 } 
 
 @layer base {
