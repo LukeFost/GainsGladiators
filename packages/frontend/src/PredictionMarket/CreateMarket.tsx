@@ -74,15 +74,15 @@ export function PlaceBet() {
             <div className="flex justify-between">
               <Button 
                 onClick={() => setBetOnA(true)} 
-                variant={betOnA ? "default" : "outline"}
-                className="w-[48%]"
+                variant="default"
+                className={`w-[48%] ${betOnA ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 shadow-lg' : 'bg-gray-200 text-gray-700'}`}
               >
                 AI Model A
               </Button>
               <Button 
                 onClick={() => setBetOnA(false)} 
-                variant={!betOnA ? "default" : "outline"}
-                className="w-[48%]"
+                variant="default"
+                className={`w-[48%] ${!betOnA ? 'bg-gradient-to-r from-red-700 to-red-900 shadow-lg' : 'bg-gray-200 text-gray-700'}`}
               >
                 AI Model B
               </Button>

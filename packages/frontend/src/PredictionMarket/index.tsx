@@ -32,15 +32,23 @@ export default function PredictionMarket() {
                 <div className="mb-6">
                     <div className="h-8 w-full flex rounded-full overflow-hidden">
                         <motion.div
-                            className="h-full bg-blue-600"
-                            style={{ width: `${progress}%` }}
+                            className="h-full"
+                            style={{
+                                width: `${progress}%`,
+                                background: 'linear-gradient(90deg, #FFD700, #FFA500)',
+                                boxShadow: '0 0 10px 2px rgba(255, 215, 0, 0.5)'
+                            }}
                             initial={{ width: 0 }}
                             animate={{ width: `${progress}%` }}
                             transition={{ duration: 0.5 }}
                         />
                         <motion.div
-                            className="h-full bg-red-600"
-                            style={{ width: `${100 - progress}%` }}
+                            className="h-full"
+                            style={{
+                                width: `${100 - progress}%`,
+                                background: 'linear-gradient(90deg, #8B0000, #B22222)',
+                                boxShadow: '0 0 10px 2px rgba(139, 0, 0, 0.5)'
+                            }}
                             initial={{ width: `${100 - progress}%` }}
                             animate={{ width: `${100 - progress}%` }}
                             transition={{ duration: 0.5 }}
