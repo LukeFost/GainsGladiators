@@ -31,14 +31,21 @@ export async function handler(event: any) {
 
     let publishOutput = '';
     let setSecretsOutput = '';
+    let cid = '';
 
     publish.stdout.on('data', (data) => {
       const output = data.toString();
       publishOutput += output;
       log(`Publish stdout: ${output.trim()}`);
+      const cidMatch = output.match(/ipfs:\/\/([a-zA-Z0-9]+)/);
+      if (cidMatch) {
+        cid = cidMatch[1];
+        log(`CID found: ${cid}`);
+      }
     });
     publish.stderr.on('data', (data) => {
       const error = data.toString();
+      publishOutput += error;
       log(`Publish stderr: ${error.trim()}`);
     });
 
@@ -49,6 +56,7 @@ export async function handler(event: any) {
     });
     setSecrets.stderr.on('data', (data) => {
       const error = data.toString();
+      setSecretsOutput += error;
       log(`SetSecrets stderr: ${error.trim()}`);
     });
 
@@ -71,7 +79,11 @@ export async function handler(event: any) {
     log('Deployment process completed successfully');
     return {
       statusCode: 200,
-      body: JSON.stringify({ publish: publishOutput, setSecrets: setSecretsOutput }),
+      body: JSON.stringify({ 
+        publish: publishOutput, 
+        setSecrets: setSecretsOutput,
+        cid: cid
+      }),
     };
   } catch (error) {
     log(`Error: ${error.message}`);
