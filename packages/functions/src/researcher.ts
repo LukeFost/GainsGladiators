@@ -1,9 +1,21 @@
 import { Resource } from "sst";
 import { QueryOptimizer } from "./Researcher/agents/optimizer";
 import { Router } from "./Researcher/router";
+import OpenAI from "openai";
 
-const optimizer = new QueryOptimizer(Resource.OpenRouterApiKey.value);
-const router = new Router(optimizer, 3, Resource.OpenRouterApiKey.value);
+// Initialize the OpenAI client
+const openai = new OpenAI({
+  apiKey: Resource.OpenRouterApiKey.value,
+  baseURL: "https://openrouter.ai/api/v1",
+  defaultHeaders: {
+    "HTTP-Referer": "https://gainsgladiators.com",
+    "X-Title": "GainsGladiators",
+  }
+});
+
+// Pass the OpenAI instance to QueryOptimizer
+const optimizer = new QueryOptimizer(openai);
+const router = new Router(optimizer, 3, openai);
 
 export async function handler(event: any) {
   try {

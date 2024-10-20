@@ -1,3 +1,4 @@
+import OpenAI from "openai";
 import { QueryOptimizer } from './agents/optimizer';
 import { WorkerAgent } from './agents/worker';
 import { Task, TaskResult } from './shared/taskTypes';
@@ -7,10 +8,10 @@ export class Router {
     private workers: WorkerAgent[] = [];
     private taskResults: TaskResult[] = [];
 
-    constructor(optimizer: QueryOptimizer, workerCount: number, apiKey: string) {
+    constructor(optimizer: QueryOptimizer, workerCount: number, openai: OpenAI) {
         this.optimizer = optimizer;
         for (let i = 0; i < workerCount; i++) {
-            this.workers.push(new WorkerAgent(`worker-${i + 1}`, apiKey));
+            this.workers.push(new WorkerAgent(`worker-${i + 1}`, openai));
         }
     }
 

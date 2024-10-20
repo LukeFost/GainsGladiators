@@ -8,15 +8,9 @@ export class WorkerAgent {
     isBusy: boolean = false;
     private openai: OpenAI;
 
-    constructor(id: string, apiKey: string) {
+    constructor(id: string, openai: OpenAI) {
         this.id = id;
-        this.openai = new OpenAI({
-            apiKey: apiKey,
-            baseURL: "https://openrouter.ai/api/v1",
-            defaultHeaders: {
-                "X-Title": "GainsGladiators",
-            }
-        });
+        this.openai = openai;
     }
 
     async executeTask(task: Task): Promise<TaskResult> {
