@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Menu, Home, ShoppingCart, Eye, User, TrendingUp, Bot, Swords } from 'lucide-react'
+import { Menu, Home, ShoppingCart, Eye, TrendingUp } from 'lucide-react'
 import { Link } from '@tanstack/react-router' // Use TanStack's Link for routing compatibility
 
 import { Button } from '@/components/ui/button'

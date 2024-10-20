@@ -22,10 +22,10 @@ export default function PredictionMarket() {
         functionName: 'getOdds',
     });
 
-    const { oddsA, oddsB } = getOdds();
+    const odds = getOdds();
     
     const totalOdds = contractOdds ? Number(contractOdds[0]) + Number(contractOdds[1]) : 0;
-    const progress = totalOdds > 0 ? Math.round((Number(contractOdds[0]) / totalOdds) * 100) : 50;
+    const progress = totalOdds > 0 ? Math.round((Number(contractOdds?.[0] ?? 0) / totalOdds) * 100) : 50;
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-start pt-24">

@@ -20,7 +20,7 @@ export function MintTokens() {
       await writeContract({
         address: erc20Address,
         abi: mockerc20ABI,
-        functionName: 'mint',
+        functionName: 'transfer',
         args: [userAddress, parseEther('100')], // Minting 100 tokens
       })
       alert('100 tokens minted successfully!')

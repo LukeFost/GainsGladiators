@@ -88,11 +88,11 @@ export function PlaceBet() {
     address: erc20Address,
     abi: mockerc20ABI,
     functionName: 'allowance',
-    args: [userAddress, predictAddress],
+    args: userAddress && predictAddress ? [userAddress, predictAddress] : undefined,
   })
 
   useEffect(() => {
-    if (currentApproval) {
+    if (currentApproval !== undefined) {
       setTokenApproval(formatEther(currentApproval))
     }
   }, [currentApproval])
@@ -179,7 +179,7 @@ export function PlaceBet() {
       </Button>
       <Button 
         onClick={handlePlaceBet} 
-        disabled={isBetPending || isBetConfirming || !amount || parseEther(amount) > currentApproval}
+        disabled={isBetPending || isBetConfirming || !amount || (currentApproval !== undefined && parseEther(amount) > currentApproval)}
         className="w-full"
       >
         {isBetPending ? 'Submitting...' : isBetConfirming ? 'Confirming...' : `Place Bet on ${betOnA ? 'AI Model A' : 'AI Model B'}`}
