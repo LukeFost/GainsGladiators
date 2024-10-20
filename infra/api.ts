@@ -12,11 +12,8 @@ export const researcherAi = new sst.aws.Function("Researcher",{
   }
 })
 
-export const deployAi = new sst.aws.Function("DeployAi", {
+export const deployFunction = new sst.aws.Function("DeployFunction", {
   handler: "packages/functions/src/deploy.handler",
   url: true,
   link: [thirdwebPubApiKey],
-  nodejs: {
-    install: []
-  }
 })
