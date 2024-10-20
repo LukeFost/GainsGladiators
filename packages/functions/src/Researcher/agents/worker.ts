@@ -1,6 +1,7 @@
-import OpenAI from "openai";
 import { Task, TaskResult } from '../shared/taskTypes';
-import { executeTools } from '../tools/toolExecutor';
+import OpenAI from 'openai';
+import ChatCompletionMessageParam from 'openai';
+import ChatCompletionTool from "openai"
 import { getAvailableTools } from '../tools/toolDefinitions';
 
 export class WorkerAgent {
@@ -13,11 +14,15 @@ export class WorkerAgent {
         this.openai = openai;
     }
 
+    /**
+     * Executes a given task.
+     * @param task - The task to execute.
+     * @returns The result of the task execution.
+     */
     async executeTask(task: Task): Promise<TaskResult> {
         this.isBusy = true;
         try {
-            const result = await this.performTaskWithTools(task);
-
+            const result = await this.performTask(task);
             return {
                 id: task.id,
                 workerId: this.id,
@@ -29,41 +34,49 @@ export class WorkerAgent {
                 id: task.id,
                 workerId: this.id,
                 status: 'error',
-                error: error.message
+                error: `Worker ${this.id} failed to execute task ${task.id}: ${error instanceof Error ? error.message : String(error)}`
             };
         } finally {
             this.isBusy = false;
         }
     }
 
-    private async performTaskWithTools(task: Task): Promise<string> {
-        let conversationMessages = [
-            { role: "system", content: "You are a research assistant. Use the provided tools to complete the task." },
-            { role: "user", content: `Task: ${task.description}\nParameters: ${JSON.stringify(task.parameters)}` }
+    /**
+     * Performs the actual task processing using AI.
+     * @param task - The task to perform.
+     * @returns The result of the task.
+     */
+    private async performTask(task: Task): Promise<string> {
+        const prompt = `
+        Execute the following task:
+        ${task.description}
+
+        Parameters:
+        ${JSON.stringify(task.parameters, null, 2)}
+
+        Provide a detailed response addressing all aspects of the task.
+        `;
+
+        const messages: ChatCompletionMessageParam[] = [
+            { role: "user", content: prompt }
         ];
 
-        let toolCallRequired = true;
+        const completion = await this.openai.chat.completions.create({
+            model: "openai/gpt-3.5-turbo",
+            messages: messages,
+            tools: getAvailableTools() as ChatCompletionTool[],
+            tool_choice: "auto"
+        });
 
-        while (toolCallRequired) {
-            const response = await this.openai.chat.completions.create({
-                model: "openai/gpt-3.5-turbo",
-                messages: conversationMessages,
-                tools: getAvailableTools(),
-                tool_choice: "auto"
-            });
+        const responseMessage = completion.choices[0].message;
 
-            const responseMessage = response.choices[0].message;
-
-            if (responseMessage.tool_calls) {
-                const toolResults = await executeTools(responseMessage.tool_calls);
-                conversationMessages.push(responseMessage);
-                conversationMessages.push(...toolResults);
-            } else {
-                toolCallRequired = false;
-                return responseMessage.content || "No response generated.";
-            }
+        if (responseMessage.content) {
+            return responseMessage.content;
+        } else if (responseMessage.tool_calls) {
+            // Handle tool calls if needed
+            return "Tool calls were made, but handling is not implemented yet.";
+        } else {
+            throw new Error("Failed to generate response for the task");
         }
-
-        throw new Error("Task execution completed without a final response.");
     }
 }
