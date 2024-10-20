@@ -1,6 +1,5 @@
 import { Task, TaskResult } from '../shared/taskTypes';
-import { OpenAI } from 'openai';
-import { ChatCompletionCreateParams } from 'openai';
+import OpenAI from 'openai';
 import { getAvailableTools } from '../tools/toolDefinitions';
 
 export class WorkerAgent {
@@ -56,7 +55,7 @@ export class WorkerAgent {
         Provide a detailed response addressing all aspects of the task.
         `;
 
-        const messages: ChatCompletionCreateParams.Message[] = [
+        const messages = [
             { role: 'user', content: prompt }
         ];
 
