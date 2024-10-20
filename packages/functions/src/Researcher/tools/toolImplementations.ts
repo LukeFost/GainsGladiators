@@ -49,7 +49,7 @@ function analyzeResults(results: ExaResult[]): string {
 
 export async function exa_search(params: { query: string }): Promise<string> {
   try {
-    logger.info(`Starting Exa search with query: ${params.query}`);
+    console.log(`Starting Exa search with query: ${params.query}`);
 
     const response = await axios.post(API_URL, {
       query: params.query,
@@ -72,20 +72,20 @@ export async function exa_search(params: { query: string }): Promise<string> {
       }
     });
 
-    logger.info(`Raw Exa search result: ${JSON.stringify(response.data, null, 2)}`);
+    console.log(`Raw Exa search result: ${JSON.stringify(response.data, null, 2)}`);
 
     if (response.data?.results?.length > 0) {
       const processedResults = processExaResults(response.data.results);
       const analysis = analyzeResults(processedResults);
 
-      logger.info(`Processed Exa search result: ${analysis}`);
+      console.log(`Processed Exa search result: ${analysis}`);
       return analysis;
     } else {
-      logger.info("No relevant results found in Exa search");
+      console.log("No relevant results found in Exa search");
       return 'No relevant results found based on the query.';
     }
   } catch (error) {
-    logger.error(`Error during Exa AI search: ${error}`);
+    console.error(`Error during Exa AI search: ${error}`);
     return 'There was an error during the search.';
   }
 }
