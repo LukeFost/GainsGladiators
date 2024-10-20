@@ -1,14 +1,8 @@
 import { Resource } from "sst";
-import OpenAI from "openai";
 import { QueryOptimizer } from "./Researcher/agents/optimizer";
 import { Router } from "./Researcher/router";
 
-const openai = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: Resource.OpenRouterApiKey.value,
-});
-
-const optimizer = new QueryOptimizer(openai);
+const optimizer = new QueryOptimizer(Resource.OpenRouterApiKey.value);
 const router = new Router(optimizer, 3, Resource.OpenRouterApiKey.value);
 
 export async function handler(event: any) {
