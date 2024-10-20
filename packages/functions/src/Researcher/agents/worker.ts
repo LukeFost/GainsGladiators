@@ -1,11 +1,11 @@
 import { Task, TaskResult } from '../shared/taskTypes';
 import { exaSearch } from '../tools/searcher';
-import { OpenAI } from 'openai';
+import { processQueryWithLLM } from '../shared/llm';
+import { analysisPrompt } from '../prompts/analysisPrompt';
 
 export class WorkerAgent {
   id: string;
   isBusy: boolean = false;
-  
 
   constructor(id: string) {
     this.id = id;
@@ -37,23 +37,28 @@ export class WorkerAgent {
   }
 
   private async performTask(task: Task): Promise<string> {
-    
     const queryJson = JSON.parse(task.description);
     const formattedQuery = queryJson.formattedQuery || queryJson.originalQuery;
     const searchResult = await exaSearch(formattedQuery, task.parameters);
     
-    // Generate a response based on the search results and the formatted query
+    // Generate an analysis based on the search results and the formatted query
+    const analysis = await processQueryWithLLM(
+      formattedQuery,
+      analysisPrompt.model,
+      analysisPrompt.system,
+      analysisPrompt.user(queryJson.originalQuery, formattedQuery, searchResult)
+    );
+    
     const response = {
       originalQuery: queryJson.originalQuery,
       formattedQuery: formattedQuery,
       keywords: queryJson.keywords,
       context: queryJson.context,
-      searchResults: searchResult,
-      // Here you would typically use an AI to generate a summary or analysis
-      summary: `Search completed for "${formattedQuery}". ${searchResult.length} results found.`
+      searchResults: JSON.parse(searchResult),
+      analysis: JSON.parse(analysis)
     };
 
-    console.log(JSON.stringify(response))
+    console.log(`Worker ${this.id} completed analysis for task ${task.id}`);
 
     return JSON.stringify(response);
   }
