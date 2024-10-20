@@ -41,13 +41,7 @@ export async function findProtocol(query: string): Promise<string | null> {
 
 export async function getProtocolData(protocol: string): Promise<ProtocolData | null> {
   try {
-    const matchedProtocol = await findProtocol(protocol);
-    if (!matchedProtocol) {
-      console.log(`No matching protocol found for: ${protocol}`);
-      return null;
-    }
-
-    const response = await axios.get(`https://api.llama.fi/protocol/${matchedProtocol.slug}`);
+    const response = await axios.get(`https://api.llama.fi/protocol/${protocol}`);
     const data = response.data;
 
     // Extract only the required fields
@@ -72,13 +66,7 @@ export async function getProtocolData(protocol: string): Promise<ProtocolData | 
 
 export async function getProtocolFees(protocol: string): Promise<any> {
   try {
-    const matchedProtocol = await findProtocol(protocol);
-    if (!matchedProtocol) {
-      console.log(`No matching protocol found for: ${protocol}`);
-      return null;
-    }
-
-    const response = await axios.get(`https://api.llama.fi/summary/fees/${matchedProtocol.slug}`);
+    const response = await axios.get(`https://api.llama.fi/summary/fees/${protocol}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching fees for protocol ${protocol}:`, error);

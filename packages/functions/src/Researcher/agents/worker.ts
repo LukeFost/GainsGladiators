@@ -154,34 +154,33 @@ export class WorkerAgent {
   private async fetchProtocolData(protocols: string[]): Promise<any> {
     const protocolData: any = {};
     for (const protocol of protocols) {
-      const matchedProtocol = await this.fuzzyFindProtocol(protocol);
-      if (matchedProtocol) {
-        const data = await getProtocolData(matchedProtocol.slug);
-        const fees = await getProtocolFees(matchedProtocol.slug);
+      const matchedProtocols = await this.fuzzyFindProtocol(protocol);
+      for (const matchedProtocol of matchedProtocols) {
+        const data = await getProtocolData(matchedProtocol);
+        const fees = await getProtocolFees(matchedProtocol);
         if (data || fees) {
-          protocolData[matchedProtocol.name] = { data, fees };
+          protocolData[matchedProtocol] = { data, fees };
         }
-      } else {
+      }
+      if (matchedProtocols.length === 0) {
         console.log(`No matching protocol found for: ${protocol}`);
       }
     }
     return protocolData;
   }
 
-  private async fuzzyFindProtocol(protocolName: string): Promise<{ name: string; slug: string } | null> {
-    const allProtocols = await findProtocol('');  // Assuming this returns all protocols
-    const preparedTargets = allProtocols.map(p => ({ name: p.name, slug: p.slug, prepared: fuzzysort.prepare(p.name) }));
+  private async fuzzyFindProtocol(protocolName: string): Promise<string[]> {
+    const allProtocols = await findProtocol('');  // This now returns string[]
+    const preparedTargets = allProtocols.map(p => ({ name: p, prepared: fuzzysort.prepare(p) }));
 
-    const result = fuzzysort.go(protocolName, preparedTargets, {
+    const results = fuzzysort.go(protocolName, preparedTargets, {
       key: 'prepared',
-      threshold: -10000,  // Adjust this threshold as needed
-      limit: 1  // We only need the best match
+      threshold: -10000,
+      limit: 10  // Get top 10 matches
     });
 
-    if (result.length > 0) {
-      return { name: result[0].obj.name, slug: result[0].obj.slug };
-    }
-
-    return null;
+    return results
+      .filter(result => result.score > 0.8)  // Filter results with score > 0.8
+      .map(result => result.obj.name);  // Return only the names
   }
 }
