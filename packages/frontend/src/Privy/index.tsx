@@ -31,7 +31,6 @@ export default function Component() {
         await wallet.switchChain(targetChainId)
         setIsCorrectNetwork(true)
       } catch (error) {
-        setError("Failed to switch network. Please switch to Sepolia manually.")
         setIsCorrectNetwork(false)
       }
     } else {
