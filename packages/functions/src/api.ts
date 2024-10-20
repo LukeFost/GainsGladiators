@@ -1,6 +1,5 @@
 import { Resource } from "sst";
 import { Handler } from "aws-lambda";
-import { Example } from "@gainsgladiators/core/example";
 
 export const handler: Handler = async (_event) => {
   return {
