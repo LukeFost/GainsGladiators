@@ -19,7 +19,7 @@ export const SwordsAnimation: React.FC = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 2 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 flex items-center justify-center"
+          className="flex justify-center"
         >
           <img src="/SwordClash.gif" alt="Swords Animation" className="w-1/2 h-auto" />
         </motion.div>
@@ -27,7 +27,7 @@ export const SwordsAnimation: React.FC = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="absolute inset-0 flex items-center justify-center"
+          className="flex justify-center"
         >
           <img src="/SwordTogether.png" alt="Static Sword" className="w-1/2 h-auto" />
         </motion.div>
