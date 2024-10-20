@@ -8,6 +8,6 @@ export interface TaskResult {
     id: string;
     workerId: string;
     status: 'success' | 'error';
-    result?: any;
+    result?: string;
     error?: string;
 }
