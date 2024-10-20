@@ -1,22 +1,32 @@
 import MarketPlace from '@/MarketPlace';
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useEffect } from 'react'
-
+import { useWallets } from '@privy-io/react-auth'
 
 export const Route = createLazyFileRoute('/market')({
   component: MarketRoute,
 })
 
 function MarketRoute() {
-  const { chain } = useNetwork()
-  const { switchNetwork } = useSwitchNetwork()
+  const { wallets } = useWallets()
 
   useEffect(() => {
-    const storyProtocolChainId = 1513
-    if (chain?.id !== storyProtocolChainId) {
-      switchNetwork?.(storyProtocolChainId)
+    const switchToStoryProtocol = async () => {
+      if (wallets.length > 0) {
+        const wallet = wallets[0]
+        const storyProtocolChainId = 1513
+        if (wallet.chainId !== `eip155:${storyProtocolChainId}`) {
+          try {
+            await wallet.switchChain(storyProtocolChainId)
+          } catch (error) {
+            console.error('Failed to switch network:', error)
+          }
+        }
+      }
     }
-  }, [chain, switchNetwork])
+
+    switchToStoryProtocol()
+  }, [wallets])
 
   return <MarketPlace />;
 }
