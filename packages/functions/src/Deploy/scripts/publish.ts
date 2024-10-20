@@ -41,11 +41,37 @@ export async function publish(): Promise<{ cid: string, log: string[] }> {
   };
 
   try {
+    logAndStore(`Current working directory: ${process.cwd()}`);
     logAndStore('Starting publish process');
     const gatewayUrl = 'https://wapo-testnet.phala.network';
 
-    // Read the content of dist/index.js
-    const fileContent = readFileSync('dist/index.js', 'utf-8');
+    // Try different possible paths for the built file
+    const possiblePaths = [
+      'dist/index.js',
+      'packages/functions/dist/Deploy/src/index.js',
+      'dist/Deploy/src/index.js',
+      '../dist/Deploy/src/index.js',
+      '../../dist/Deploy/src/index.js'
+    ];
+
+    let fileContent: string | null = null;
+    let usedPath: string | null = null;
+
+    for (const filePath of possiblePaths) {
+      const fullPath = path.resolve(process.cwd(), filePath);
+      logAndStore(`Checking for file at: ${fullPath}`);
+      if (existsSync(fullPath)) {
+        fileContent = readFileSync(fullPath, 'utf-8');
+        usedPath = filePath;
+        break;
+      }
+    }
+
+    if (!fileContent || !usedPath) {
+      throw new Error('Built file not found. Make sure to run the build process before deployment.');
+    }
+
+    logAndStore(`Using file at: ${usedPath}`);
 
     logAndStore('Uploading file to IPFS via thirdweb...');
     const uri = await upload({
