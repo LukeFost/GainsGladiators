@@ -49,6 +49,6 @@ export class Router {
     }
 
     private getAvailableWorker(): WorkerAgent | null {
-        return this.workers.find(worker => worker.isAvailable()) || null;
+        return this.workers.find(worker => !worker.isBusy) || null;
     }
 }

@@ -9,18 +9,11 @@ const openai = new OpenAI({
 });
 
 const optimizer = new QueryOptimizer(openai);
-const router = new Router(optimizer, 3, openai); // Create 3 worker agents
+const router = new Router(optimizer, 3, Resource.OpenRouterApiKey.value);
 
 export async function handler(event: any) {
   try {
-    // Extract the query from the incoming request
-    const requestBody = JSON.parse(event.body || '{}');
-    let query: string = requestBody.query || '';
-
-    // If query is not in the body, check query parameters
-    if (!query) {
-      query = event.queryStringParameters?.query || '';
-    }
+    const query = extractQuery(event);
 
     if (!query) {
       return {
@@ -29,17 +22,11 @@ export async function handler(event: any) {
       };
     }
 
-    // Handle the query using the Router
     const results = await router.handleQuery(query);
-
-    // Combine results into a single response
-    const combinedResult = results.map(r => r.result).join('\n\n');
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        message: combinedResult
-      }),
+      body: JSON.stringify({ results }),
     };
   } catch (error) {
     console.error('Error:', error);
@@ -48,4 +35,9 @@ export async function handler(event: any) {
       body: JSON.stringify({ error: 'An error occurred processing your request' }),
     };
   }
+}
+
+function extractQuery(event: any): string {
+  const requestBody = JSON.parse(event.body || '{}');
+  return requestBody.query || event.queryStringParameters?.query || '';
 }
