@@ -1,5 +1,5 @@
-import { spawn } from 'child_process';
-import { writeFileSync, existsSync, mkdirSync, appendFileSync } from 'fs';
+import { writeFileSync, existsSync, mkdirSync, appendFileSync, readFileSync } from 'fs';
+import { upload } from "thirdweb/storage";
 import dotenv from 'dotenv';
 import { Resource } from 'sst';
 
@@ -34,65 +34,44 @@ function updateDeploymentLog(cid: string) {
 }
 
 export async function publish(): Promise<{ cid: string, log: string[] }> {
-  return new Promise((resolve, reject) => {
-    try {
-      const publishLog: string[] = [];
-      const logAndStore = (message: string) => {
-        log(message);
-        publishLog.push(message);
-      };
+  const publishLog: string[] = [];
+  const logAndStore = (message: string) => {
+    log(message);
+    publishLog.push(message);
+  };
 
-      logAndStore('Starting publish process');
-      const gatewayUrl = 'https://wapo-testnet.phala.network'
-      const command = `npx thirdweb upload dist/index.js -k ${Resource.THIRDWEB_PUB_API_KEY.value}`
-      logAndStore(`Running command: npx thirdweb upload dist/index.js`);
-      logAndStore(`This may require you to log into thirdweb and will take some time to publish to IPFS...`);
-      
-      const childProcess = spawn(command, { shell: true })
-      
-      childProcess.stdout.on('data', (data) => {
-        process.stdout.write(data);
-        logAndStore(`stdout: ${data}`);
-      })
+  try {
+    logAndStore('Starting publish process');
+    const gatewayUrl = 'https://wapo-testnet.phala.network';
 
-      let stderr = ''
-      childProcess.stderr.on('data', (data) => {
-        process.stderr.write(data);
-        stderr += data;
-        logAndStore(`stderr: ${data}`);
-      })
+    // Read the content of dist/index.js
+    const fileContent = readFileSync('dist/index.js', 'utf-8');
 
-      childProcess.on('close', (code) => {
-        if (code === 0) {
-          logAndStore('Command completed successfully');
-          const regex = /ipfs:\/\/([a-zA-Z0-9]+)/;
-          const match = stderr.match(regex);
+    logAndStore('Uploading file to IPFS via thirdweb...');
+    const uri = await upload({
+      client: {
+        apiKey: Resource.THIRDWEB_PUB_API_KEY.value,
+      },
+      files: [
+        {
+          name: "index.js",
+          data: fileContent,
+        },
+      ],
+    });
 
-          if (match) {
-            const ipfsCid = match[1];
-            logAndStore(`Agent Contract deployed at: ${gatewayUrl}/ipfs/${ipfsCid}`);
-            logAndStore(`\nIf your agent requires secrets, ensure to do the following:\n1) Edit the ./secrets/default.json file or create a new JSON file in the ./secrets folder and add your secrets to it.\n2) Run command: 'npm run set-secrets' or 'npm run set-secrets [path-to-json-file]'`);
+    const ipfsCid = uri.replace('ipfs://', '');
+    logAndStore(`Agent Contract deployed at: ${gatewayUrl}/ipfs/${ipfsCid}`);
+    logAndStore(`\nIf your agent requires secrets, ensure to do the following:\n1) Edit the ./secrets/default.json file or create a new JSON file in the ./secrets folder and add your secrets to it.\n2) Run command: 'npm run set-secrets' or 'npm run set-secrets [path-to-json-file]'`);
 
-            // Update the deployment log
-            updateDeploymentLog(ipfsCid);
-            resolve({ cid: ipfsCid, log: publishLog });
-          } else {
-            const error = 'Error: IPFS CID not found';
-            logAndStore(error);
-            reject(new Error(error));
-          }
-        } else {
-          const error = `Error: Command exited with code ${code}`;
-          logAndStore(error);
-          reject(new Error(error));
-        }
-      });
-    } catch (error) {
-      log(`Error: ${error.message}`);
-      console.error('Error:', error);
-      reject(error);
-    }
-  });
+    // Update the deployment log
+    updateDeploymentLog(ipfsCid);
+    return { cid: ipfsCid, log: publishLog };
+  } catch (error) {
+    log(`Error: ${error.message}`);
+    console.error('Error:', error);
+    throw error;
+  }
 }
 
 // If this script is run directly (not imported as a module)

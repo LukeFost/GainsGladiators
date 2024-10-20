@@ -1,5 +1,5 @@
-import { spawn } from 'child_process';
 import { readFileSync, appendFileSync, existsSync, mkdirSync } from 'fs';
+import axios from 'axios';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -39,77 +39,53 @@ function logToFile(cid: string, token: string, key: string, url: string) {
 }
 
 export async function setSecrets(jsonFilePath: string = './secrets/default.json'): Promise<{ url: string, log: string[] }> {
-  return new Promise((resolve, reject) => {
-    try {
-      const secretsLog: string[] = [];
-      const logAndStore = (message: string) => {
-        log(message);
-        secretsLog.push(message);
-      };
+  const secretsLog: string[] = [];
+  const logAndStore = (message: string) => {
+    log(message);
+    secretsLog.push(message);
+  };
 
-      logAndStore(`Using secrets file: ${jsonFilePath}`);
+  try {
+    logAndStore(`Using secrets file: ${jsonFilePath}`);
 
-      // Read and parse the JSON file for secrets and latest deployment info
-      const secrets = readJsonFile(jsonFilePath);
-      const latestDeployment = readJsonFile('./logs/latestDeployment.json');
+    // Read and parse the JSON file for secrets and latest deployment info
+    const secrets = readJsonFile(jsonFilePath);
+    const latestDeployment = readJsonFile('./logs/latestDeployment.json');
 
-      logAndStore('Starting setSecrets process');
-      const gatewayUrl = 'https://wapo-testnet.phala.network';
-      const cid = latestDeployment.cid;
-      const command = `curl ${gatewayUrl}/vaults -H 'Content-Type: application/json' -d '{"cid": "${cid}", "data": ${JSON.stringify(secrets)}}'`;
-      logAndStore(`Storing secrets for CID: ${cid}`);
-      const childProcess = spawn(command, { shell: true })
-      
-      let stdout = ''
-      childProcess.stdout.on('data', (data) => {
-        process.stdout.write(data)
-        stdout += data
-        logAndStore(`stdout: ${data}`);
-      })
+    logAndStore('Starting setSecrets process');
+    const gatewayUrl = 'https://wapo-testnet.phala.network';
+    const cid = latestDeployment.cid;
+    
+    logAndStore(`Storing secrets for CID: ${cid}`);
+    const response = await axios.post(`${gatewayUrl}/vaults`, {
+      cid: cid,
+      data: secrets
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
 
-      let stderr = ''
-      childProcess.stderr.on('data', (data) => {
-        process.stderr.write(data)
-        stderr += data
-        logAndStore(`stderr: ${data}`);
-      })
-
-      childProcess.on('close', (code) => {
-        if (code === 0) {
-          logAndStore('Command completed successfully');
-          const regex = /"token":\s*"([a-zA-Z0-9]+)","key":\s*"([a-zA-Z0-9]+)"/;
-          const match = stdout.match(regex);
-
-          if (match) {
-            const token = match[1];
-            const key = match[2];
-            const url = `${gatewayUrl}/ipfs/${cid}?key=${key}`;
-            logAndStore(`Secrets set successfully. Agent URL: ${url}`);
-            console.log(`\n\nSecrets set successfully. Go to the URL below to interact with your agent:`);
-            console.log(`${url}`);
-            // Log the details to a file
-            logToFile(cid, token, key, url);
-            resolve({ url, log: secretsLog });
-          } else {
-            const error = 'Error: Secrets failed to set. Token and key not found in response.';
-            logAndStore(error);
-            console.log('Secrets failed to set');
-            reject(new Error(error));
-          }
-        } else {
-          const error = `Error: Command exited with code ${code}`;
-          logAndStore(error);
-          console.log(`Command exited with code ${code}`);
-          reject(new Error(error));
-        }
-      });
-
-    } catch (error) {
-      log(`Error: ${error.message}`);
-      console.error('Error:', error);
-      reject(error);
+    if (response.status === 200) {
+      const { token, key } = response.data;
+      const url = `${gatewayUrl}/ipfs/${cid}?key=${key}`;
+      logAndStore(`Secrets set successfully. Agent URL: ${url}`);
+      console.log(`\n\nSecrets set successfully. Go to the URL below to interact with your agent:`);
+      console.log(`${url}`);
+      // Log the details to a file
+      logToFile(cid, token, key, url);
+      return { url, log: secretsLog };
+    } else {
+      const error = 'Error: Secrets failed to set. Unexpected response from server.';
+      logAndStore(error);
+      console.log('Secrets failed to set');
+      throw new Error(error);
     }
-  });
+  } catch (error) {
+    log(`Error: ${error.message}`);
+    console.error('Error:', error);
+    throw error;
+  }
 }
 
 // If this script is run directly (not imported as a module)
