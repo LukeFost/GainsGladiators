@@ -7,9 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { usePredictionStore } from '../stores/predictionStore'
-import { erc20ABI } from 'wagmi'
-
-const betTokenAddress = '0xF00B21BaF761678740147CDaC8eC096E39D9c4CF'
+import { erc20Address, mockerc20ABI } from '../abi/mockerc20ABI'
 
 function usePlaceBet() {
   const { writeContract, data: hash, isPending, error } = useWriteContract()
@@ -58,13 +56,13 @@ export function PlaceBet() {
 
   const { data: balance } = useBalance({
     address: userAddress,
-    token: betTokenAddress,
+    token: erc20Address,
   })
 
   // Read current token approval
   const { data: currentApproval } = useReadContract({
-    address: betTokenAddress,
-    abi: erc20ABI,
+    address: erc20Address,
+    abi: mockerc20ABI,
     functionName: 'allowance',
     args: [userAddress, predictAddress],
   })
@@ -90,8 +88,8 @@ export function PlaceBet() {
       // Approve the contract to spend tokens if needed
       if (parseEther(amount) > currentApproval) {
         await writeContract({
-          address: betTokenAddress,
-          abi: erc20ABI,
+          address: erc20Address,
+          abi: mockerc20ABI,
           functionName: 'approve',
           args: [predictAddress, parseEther(amount)],
         })
@@ -111,8 +109,8 @@ export function PlaceBet() {
   const handleMintTokens = async () => {
     try {
       await writeContract({
-        address: betTokenAddress,
-        abi: erc20ABI,
+        address: erc20Address,
+        abi: mockerc20ABI,
         functionName: 'mint',
         args: [userAddress, parseEther('100')], // Minting 100 tokens
       })
