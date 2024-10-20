@@ -52,13 +52,13 @@ export const ScrollModal: React.FC<ScrollModalProps> = ({ isOpen, onClose, child
               exit={{ opacity: 0 }}
               className="relative z-10 flex flex-col items-center justify-between h-full py-16 px-8"
             >
-              <h2 className="text-2xl font-bold mb-4 text-[--muted]">Modal Content</h2>
-              <div className="flex-grow flex flex-col items-center justify-center text-[--muted]">
+              <h2 className="text-2xl font-bold mb-4 text-black">Modal Content</h2>
+              <div className="flex-grow flex flex-col items-center justify-center text-black">
                 {children}
               </div>
               <button
                 onClick={onClose}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-4 px-4 py-2 mb-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 Close
               </button>
