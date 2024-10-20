@@ -12,7 +12,7 @@ export class Router {
         console.log('Router: Starting to handle query:', query);
         const tasks: Task[] = Array.from({ length: this.workerPool.workers.length }, (_, i) => ({
             id: `task-${Date.now()}-${i}`,
-            description: JSON.stringify(query),
+            description: query,
             parameters: {
                 maxResults: 5,
                 yearRange: '2020-2023'
